@@ -793,6 +793,8 @@ ${[100,150,200,300].map(x=>`<option value="${x}" ${String(localStorage.getItem("
 </svg>
 </button>
 <br>
+<div>Hız Teşhisi <span data-action="sttCnf" data-value="diagMode" style="${sttCnf(0,0,"diagMode")}" ><b style="${sttCnf(0,1,"diagMode")}"></b></span></div>
+<br>
 <div>Geliştirici Modu <span data-action="sttCnf" data-value="devMode" style="${sttCnf(0,0,"devMode")}" ><b style="${sttCnf(0,1,"devMode")}"></b></span></div>
 <br><br>
 <br><br><br>
@@ -2986,6 +2988,54 @@ var s=Math.sqrt(sum/A.n.buf.length)<THR;
 if(s!==A.silent) onSilence(s);
 }
 },150);
+})();
+
+
+
+/*Hız teşhisi: video açılışını ölçer ve ekranda gösterir*/
+(function(){
+var D=null,box=null,lastUrl="",hooked=new WeakSet();
+function now(){return performance.now();}
+function sec(x){return x==null?"-":((x-D.t0)/1000).toFixed(1)+"s";}
+function start(){
+D={t0:now(),url:location.href,ls:null,meta:null,can:null,play:null,waits:0,waitMs:0,waitAt:null,seeks:0,adMs:0,adAt:null,ads:0,resume:"-"};
+}
+function attach(v){
+if(hooked.has(v)) return;hooked.add(v);
+v.addEventListener("loadstart",function(){if(D&&D.ls==null)D.ls=now();});
+v.addEventListener("loadedmetadata",function(){if(D&&D.meta==null)D.meta=now();});
+v.addEventListener("canplay",function(){if(D&&D.can==null)D.can=now();});
+v.addEventListener("playing",function(){if(!D)return;if(D.play==null && !document.querySelector(".ad-interrupting"))D.play=now();if(D.waitAt){D.waitMs+=now()-D.waitAt;D.waitAt=null;}});
+v.addEventListener("waiting",function(){if(!D)return;D.waits++;if(!D.waitAt)D.waitAt=now();});
+v.addEventListener("seeking",function(){if(D)D.seeks++;});
+}
+setInterval(function(){
+if(localStorage.getItem("diagMode")!="true"){if(box){box.remove();box=null;}return;}
+if(location.pathname.indexOf("/watch")<0){if(box)box.style.display="none";return;}
+if(location.href!==lastUrl){lastUrl=location.href;start();}
+var v=document.getElementsByClassName("video-stream")[0];
+if(v) attach(v);
+var ad=!!document.querySelector(".ad-interrupting");
+if(ad && D.adAt==null){D.adAt=now();D.ads++;}
+if(!ad && D.adAt!=null){D.adMs+=now()-D.adAt;D.adAt=null;}
+if(!box){box=document.createElement("div");box.setAttribute("style","position:fixed;top:60px;left:6px;z-index:2147483647;background:rgba(0,0,0,.8);color:#0f0;font:11px/1.35 monospace;padding:6px 8px;border-radius:8px;pointer-events:none;white-space:pre;");document.body.appendChild(box);}
+box.style.display="block";
+var A=window.ytproAudio;
+var waitNow=D.waitAt?now()-D.waitAt:0;
+box.textContent=
+"TEŞHİS  geçen: "+((now()-D.t0)/1000).toFixed(1)+"s\n"+
+"yükleme başladı: "+sec(D.ls)+"\n"+
+"video bilgisi:   "+sec(D.meta)+"\n"+
+"oynatılabilir:   "+sec(D.can)+"\n"+
+"İLK OYNATMA:     "+sec(D.play)+"\n"+
+"reklam: "+D.ads+" adet, "+((D.adMs+(D.adAt?now()-D.adAt:0))/1000).toFixed(1)+"s\n"+
+"bekleme: "+D.waits+" kez, "+((D.waitMs+waitNow)/1000).toFixed(1)+"s\n"+
+"atlama(seek): "+D.seeks+"\n"+
+"durum: rs="+(v?v.readyState:"-")+" ns="+(v?v.networkState:"-")+" "+(v&&v.paused?"duraklatıldı":"oynuyor")+"\n"+
+"hız: "+(v?v.playbackRate:"-")+"x  ses: "+(v?(v.muted?"kapalı":"açık"):"-")+"\n"+
+"ses motoru: "+(A&&A.el?(A.mode||"açık")+" "+(A.ctx?A.ctx.state:""):"kapalı")+"\n"+
+"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı");
+},250);
 })();
 
 }
