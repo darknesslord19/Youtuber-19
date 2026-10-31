@@ -3017,8 +3017,47 @@ return " "+(e.duration/1000).toFixed(1)+"s "+nm;
 }).join("\n");
 }catch(e){return " -";}
 }
+var NET={started:0,done:0,failed:0,codes:{},firstOk:null};
+function isGV(u){return /googlevideo\.com|\/videoplayback/.test(String(u));}
+function netEnd(ok,code){NET.done++;if(!ok)NET.failed++;NET.codes[code]=(NET.codes[code]||0)+1;if(ok&&NET.firstOk==null&&D)NET.firstOk=now();}
+try{
+if(!window.__ytproNetHook){window.__ytproNetHook=1;
+var of=window.fetch;
+window.fetch=function(i,o){
+var u=(i&&i.url)||i;
+if(!isGV(u)) return of.apply(this,arguments);
+NET.started++;
+return of.apply(this,arguments).then(function(r){netEnd(r.ok,r.status);return r;},function(e){netEnd(false,"hata");throw e;});
+};
+var oo=XMLHttpRequest.prototype.open,os=XMLHttpRequest.prototype.send;
+XMLHttpRequest.prototype.open=function(m,u){this.__gv=isGV(u);return oo.apply(this,arguments);};
+XMLHttpRequest.prototype.send=function(){
+if(this.__gv){NET.started++;var x=this;x.addEventListener("loadend",function(){netEnd(x.status>=200&&x.status<300,x.status||"hata");});}
+return os.apply(this,arguments);
+};
+}
+}catch(e){}
+function netLine(){
+var c=Object.keys(NET.codes).map(function(k){return k+"x"+NET.codes[k];}).join(",")||"-";
+return " başlayan:"+NET.started+" biten:"+NET.done+" bekleyen:"+(NET.started-NET.done)+"\n kodlar: "+c+"  ilk başarılı: "+sec(NET.firstOk);
+}
+function gv(){
+try{
+var es=performance.getEntriesByType("resource").filter(function(e){return e.startTime>=D.t0-300 && /googlevideo|videoplayback|youtubei\/v1\/player|\/js\/th\/|\/js\/bg\//.test(e.name);});
+es.sort(function(a,b){return a.startTime-b.startTime;});
+var out=es.slice(0,7).map(function(e){
+var u;try{u=new URL(e.name);}catch(x){return "";}
+var h=u.hostname.indexOf("googlevideo")>-1?"googlevideo":(u.hostname.replace("www.","")+u.pathname.split("/").slice(0,4).join("/")).slice(0,22);
+var st=(e.responseStatus!==undefined?e.responseStatus:"?");
+var kb=e.transferSize?Math.round(e.transferSize/1024)+"KB":(e.encodedBodySize?Math.round(e.encodedBodySize/1024)+"KB":"0KB");
+return " "+((e.startTime-D.t0)/1000).toFixed(1)+"s +"+(e.duration/1000).toFixed(1)+"s "+st+" "+kb+" "+h;
+});
+return (out.join("\n")||" (yok)")+"\n toplam: "+es.length;
+}catch(e){return " -";}
+}
 function start(){
 try{performance.clearResourceTimings();}catch(e){}
+NET.started=0;NET.done=0;NET.failed=0;NET.codes={};NET.firstOk=null;
 D={t0:now(),url:location.href,ls:null,meta:null,can:null,play:null,waits:0,waitMs:0,waitAt:null,seeks:0,adMs:0,adAt:null,ads:0,resume:"-"};
 }
 function attach(v){
@@ -3027,7 +3066,7 @@ v.addEventListener("loadstart",function(){if(D&&D.ls==null)D.ls=now();});
 v.addEventListener("loadedmetadata",function(){if(D&&D.meta==null)D.meta=now();});
 v.addEventListener("canplay",function(){if(D&&D.can==null)D.can=now();});
 v.addEventListener("playing",function(){if(!D)return;if(D.play==null && !document.querySelector(".ad-interrupting"))D.play=now();if(D.waitAt){D.waitMs+=now()-D.waitAt;D.waitAt=null;}});
-v.addEventListener("waiting",function(){if(!D)return;D.waits++;if(!D.waitAt)D.waitAt=now();});
+v.addEventListener("waiting",function(){if(!D)return;D.waits++;if(!D.waitAt)D.waitAt=now();if(D.w1==null)D.w1=now();});
 v.addEventListener("seeking",function(){if(D)D.seeks++;});
 }
 setInterval(function(){
@@ -3050,12 +3089,12 @@ box.textContent=
 "oynatılabilir:   "+sec(D.can)+"\n"+
 "İLK OYNATMA:     "+sec(D.play)+"\n"+
 "reklam: "+D.ads+" adet, "+((D.adMs+(D.adAt?now()-D.adAt:0))/1000).toFixed(1)+"s\n"+
-"bekleme: "+D.waits+" kez, "+((D.waitMs+waitNow)/1000).toFixed(1)+"s\n"+
+"bekleme: "+D.waits+" kez, "+((D.waitMs+waitNow)/1000).toFixed(1)+"s (ilk: "+sec(D.w1)+")\n"+"hata: "+(v&&v.error?v.error.code+" "+(v.error.message||"").slice(0,30):"yok")+"\n"+
 "atlama(seek): "+D.seeks+"\n"+
 "durum: rs="+(v?v.readyState:"-")+" ns="+(v?v.networkState:"-")+" "+(v&&v.paused?"duraklatıldı":"oynuyor")+"\n"+
 "hız: "+(v?v.playbackRate:"-")+"x  ses: "+(v?(v.muted?"kapalı":"açık"):"-")+"\n"+
 "ses motoru: "+(A&&A.el?(A.mode||"açık")+" "+(A.ctx?A.ctx.state:""):"kapalı")+"\n"+
-"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı")+"\nişlemci meşgul: "+busy()+"\nEN YAVAŞ İSTEKLER:\n"+slowest();
+"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı")+"\nişlemci meşgul: "+busy()+"\nVİDEO SUNUCUSU:\n"+netLine()+"\nVİDEO İSTEKLERİ (başlangıç +süre durum boyut):\n"+gv();
 },250);
 })();
 
