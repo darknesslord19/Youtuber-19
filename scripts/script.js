@@ -2997,7 +2997,21 @@ if(s!==A.silent) onSilence(s);
 var D=null,box=null,lastUrl="",hooked=new WeakSet();
 function now(){return performance.now();}
 function sec(x){return x==null?"-":((x-D.t0)/1000).toFixed(1)+"s";}
+try{performance.setResourceTimingBufferSize(3000);}catch(e){}
+function slowest(){
+try{
+var es=performance.getEntriesByType("resource").filter(function(e){return e.startTime>=D.t0-300;});
+es.sort(function(a,b){return b.duration-a.duration;});
+return es.slice(0,4).map(function(e){
+var u;try{u=new URL(e.name);}catch(x){return "";}
+var path=u.pathname.split("/").filter(Boolean);
+var nm=(u.hostname.replace("www.","")+"/"+(path.slice(0,2).join("/"))).slice(0,30);
+return " "+(e.duration/1000).toFixed(1)+"s "+nm;
+}).join("\n");
+}catch(e){return " -";}
+}
 function start(){
+try{performance.clearResourceTimings();}catch(e){}
 D={t0:now(),url:location.href,ls:null,meta:null,can:null,play:null,waits:0,waitMs:0,waitAt:null,seeks:0,adMs:0,adAt:null,ads:0,resume:"-"};
 }
 function attach(v){
@@ -3034,7 +3048,7 @@ box.textContent=
 "durum: rs="+(v?v.readyState:"-")+" ns="+(v?v.networkState:"-")+" "+(v&&v.paused?"duraklatıldı":"oynuyor")+"\n"+
 "hız: "+(v?v.playbackRate:"-")+"x  ses: "+(v?(v.muted?"kapalı":"açık"):"-")+"\n"+
 "ses motoru: "+(A&&A.el?(A.mode||"açık")+" "+(A.ctx?A.ctx.state:""):"kapalı")+"\n"+
-"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı");
+"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı")+"\nEN YAVAŞ İSTEKLER:\n"+slowest();
 },250);
 })();
 
