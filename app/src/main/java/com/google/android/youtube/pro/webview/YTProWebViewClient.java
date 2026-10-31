@@ -129,6 +129,22 @@ public class YTProWebViewClient extends WebViewClient {
 		}
 		
 		
+		if (url.contains("youtube.com/ytpro_cdn/gh/") && ScriptCache.key(url).endsWith(".js") && "GET".equalsIgnoreCase(request.getMethod())) {
+			String real = url.replace("youtube.com/ytpro_cdn", "cdn.jsdelivr.net");
+			boolean force = false;
+			for (Map.Entry<String, String> h : request.getRequestHeaders().entrySet()) {
+				if (h.getKey() != null && h.getKey().equalsIgnoreCase("Cache-Control") && h.getValue() != null && h.getValue().contains("no-cache")) force = true;
+			}
+			byte[] body = force ? null : ScriptCache.read(activity, real);
+			if (body != null) {
+				ScriptCache.refreshAsync(activity, real);
+				return ScriptCache.response(body);
+			}
+			body = ScriptCache.fetch(activity, real);
+			if (body == null) body = ScriptCache.read(activity, real);
+			if (body != null) return ScriptCache.response(body);
+		}
+		
 		if (url.contains("youtube.com/ytpro_cdn/")) {
 			String modifiedUrl = url;
 			if (url.contains("youtube.com/ytpro_cdn/esm")) modifiedUrl = url.replace("youtube.com/ytpro_cdn/esm", "esm.sh");
@@ -182,12 +198,19 @@ public class YTProWebViewClient extends WebViewClient {
 		return super.shouldInterceptRequest(view, request);
 	}
 	
+	private void injectScripts() {
+		web.evaluateJavascript("(function(){if(window.__ytproInj||!document.body)return;window.__ytproInj=1;if (window.trustedTypes && window.trustedTypes.createPolicy && !window.trustedTypes.defaultPolicy) {window.trustedTypes.createPolicy('default', {createHTML: (string) => string,createScriptURL: string => string, createScript: string => string, });}(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/script.js'; document.body.appendChild(script);  })();(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/bgplay.js'; document.body.appendChild(script);  })();(function () { var script = document.createElement('script');script.type='module';script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/innertube.js'; document.body.appendChild(script);  })();})();", null);
+	}
+
+	@Override
+	public void onPageCommitVisible(WebView view, String url) {
+		injectScripts();
+		super.onPageCommitVisible(view, url);
+	}
+
 	@Override
 	public void onPageFinished(WebView view, String url) {
-		web.evaluateJavascript("if (window.trustedTypes && window.trustedTypes.createPolicy && !window.trustedTypes.defaultPolicy) {window.trustedTypes.createPolicy('default', {createHTML: (string) => string,createScriptURL: string => string, createScript: string => string, });}", null);
-		web.evaluateJavascript("(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/script.js'; document.body.appendChild(script);  })();", null);
-		web.evaluateJavascript("(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/bgplay.js'; document.body.appendChild(script);  })();", null);
-		web.evaluateJavascript("(function () { var script = document.createElement('script');script.type='module';script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/innertube.js'; document.body.appendChild(script);  })();", null);
+		injectScripts();
 		
 		
 		
