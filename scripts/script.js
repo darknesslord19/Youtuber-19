@@ -936,7 +936,7 @@ Android.showToast("Your app is up to date");
 
 fetch('https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/script.js', {cache: 'reload'});
 fetch('https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/bgplay.js', {cache: 'reload'});
-fetch('https://youtube.com/ytpro_cdn/npm/ytpro/innertube.js', {cache: 'reload'});
+fetch('https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/innertube.js', {cache: 'reload'});
 }
 
 
@@ -1985,7 +1985,8 @@ ytoldV=window.location.pathname;
 }
 
 
-setInterval(pkc,0);
+setInterval(pkc,200);
+setInterval(()=>{try{adsBlock();}catch{}},250);
 
 
 
@@ -2455,9 +2456,14 @@ for(var x in ads){
 try{ads[x].remove();}catch{}
 }
 try{
-document.getElementsByClassName("ad-interrupting")[0].getElementsByTagName("video")[0].currentTime=document.getElementsByClassName("ad-interrupting")[0].getElementsByTagName("video")[0].duration;
-document.getElementsByClassName("ytp-ad-skip-button-modern")[0].click();
-
+var adV=document.getElementsByClassName("ad-interrupting")[0].getElementsByTagName("video")[0];
+adV.muted=true;
+adV.playbackRate=16;
+if(isFinite(adV.duration) && adV.duration > 0) adV.currentTime=adV.duration;
+}catch{}
+try{
+var skB=document.querySelector(".ytp-ad-skip-button-modern, .ytp-skip-ad-button, .ytp-ad-skip-button");
+if(skB) skB.click();
 }catch{}
 
 
