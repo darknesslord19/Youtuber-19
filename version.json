@@ -1,10 +1,10 @@
 {
-  "version": "4.2",
+  "version": "4.3",
   "apk": "https://github.com/darknesslord19/Youtuber-19/releases/latest/download/youtube_pro_signed.apk",
   "page": "https://github.com/darknesslord19/Youtuber-19/releases/latest",
   "notes": [
+    "Video açılmama sorunu düzeltildi",
     "Daha hızlı açılış: özellikler telefona kaydediliyor",
-    "Reklam engelleme sayfa açılır açılmaz devreye giriyor",
     "Daha az işlemci kullanımı, daha akıcı kaydırma",
     "Ses Geliştirme: yükseltici, dengeleme, konuşma netleştirme"
   ]
