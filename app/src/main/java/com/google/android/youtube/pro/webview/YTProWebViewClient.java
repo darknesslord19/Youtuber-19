@@ -198,19 +198,12 @@ public class YTProWebViewClient extends WebViewClient {
 		return super.shouldInterceptRequest(view, request);
 	}
 	
-	private void injectScripts() {
-		web.evaluateJavascript("(function(){if(window.__ytproInj||!document.body)return;window.__ytproInj=1;if (window.trustedTypes && window.trustedTypes.createPolicy && !window.trustedTypes.defaultPolicy) {window.trustedTypes.createPolicy('default', {createHTML: (string) => string,createScriptURL: string => string, createScript: string => string, });}(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/script.js'; document.body.appendChild(script);  })();(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/bgplay.js'; document.body.appendChild(script);  })();(function () { var script = document.createElement('script');script.type='module';script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/innertube.js'; document.body.appendChild(script);  })();})();", null);
-	}
-
-	@Override
-	public void onPageCommitVisible(WebView view, String url) {
-		injectScripts();
-		super.onPageCommitVisible(view, url);
-	}
-
 	@Override
 	public void onPageFinished(WebView view, String url) {
-		injectScripts();
+		web.evaluateJavascript("if (window.trustedTypes && window.trustedTypes.createPolicy && !window.trustedTypes.defaultPolicy) {window.trustedTypes.createPolicy('default', {createHTML: (string) => string,createScriptURL: string => string, createScript: string => string, });}", null);
+		web.evaluateJavascript("(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/script.js'; document.body.appendChild(script);  })();", null);
+		web.evaluateJavascript("(function () { var script = document.createElement('script'); script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/bgplay.js'; document.body.appendChild(script);  })();", null);
+		web.evaluateJavascript("(function () { var script = document.createElement('script');script.type='module';script.src='https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/innertube.js'; document.body.appendChild(script);  })();", null);
 		
 		
 		
