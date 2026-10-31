@@ -2637,9 +2637,8 @@ el.appendChild(elm);
 const targetNode = document.body;
 const config = { childList: true, subtree: true };
 
-var ytproObsPending=false, ytproLastFS=null;
-function ytproObserverTick(){
-ytproObsPending=false;
+const observer = new MutationObserver(() => {
+
 
 //speed
 
@@ -2658,19 +2657,15 @@ addSettingsTab();
 
 try{
 var video = document.getElementsByClassName('video-stream')[0];
-var r=video.getBoundingClientRect();
-var fs=r.height > r.width;
-if(fs!==ytproLastFS){ytproLastFS=fs;Android.fullScreen(fs);}
+if(video.getBoundingClientRect().height > video.getBoundingClientRect().width){
+Android.fullScreen(true);
 }
+else{
+Android.fullScreen(false);
+}}
 catch{}
 
-}
 
-/*Toplu çalıştır: her DOM değişikliğinde değil, en fazla 50 ms'de bir*/
-const observer = new MutationObserver(() => {
-if(ytproObsPending) return;
-ytproObsPending=true;
-setTimeout(ytproObserverTick,50);
 });
 
 // Start observing changes in the body
