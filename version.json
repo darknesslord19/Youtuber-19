@@ -1,11 +1,11 @@
 {
-  "version": "4.1",
+  "version": "4.2",
   "apk": "https://github.com/darknesslord19/Youtuber-19/releases/latest/download/youtube_pro_signed.apk",
   "page": "https://github.com/darknesslord19/Youtuber-19/releases/latest",
   "notes": [
-    "Uygulama tamamen Türkçe",
-    "Kaldığın yerden devam",
-    "Sessiz kısımları atlama",
-    "Güncellemeler artık Darkness Lord sürümünden geliyor"
+    "Daha hızlı açılış: özellikler telefona kaydediliyor",
+    "Reklam engelleme sayfa açılır açılmaz devreye giriyor",
+    "Daha az işlemci kullanımı, daha akıcı kaydırma",
+    "Ses Geliştirme: yükseltici, dengeleme, konuşma netleştirme"
   ]
 }
