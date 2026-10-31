@@ -2466,15 +2466,15 @@ var mainV=document.getElementsByClassName("video-stream")[0];
 if(adBox){
 var adV=adBox.getElementsByTagName("video")[0];
 if(adV){
-if(!window.ytproAdState) window.ytproAdState={el:adV,muted:adV.muted};
+if(!window.ytproAdState) window.ytproAdState={el:adV};
 adV.muted=true;
-if(isFinite(adV.duration) && adV.duration > 0){adV.currentTime=adV.duration;}
-else{adV.playbackRate=16;}
+adV.playbackRate=16;
+if(isFinite(adV.duration) && adV.duration > 0) adV.currentTime=adV.duration;
 }
 }else if(window.ytproAdState){
 var s=window.ytproAdState;window.ytproAdState=null;
 var rv=s.el||mainV;
-if(rv){rv.muted=s.muted;if(rv.playbackRate>=8) rv.playbackRate=1;}
+if(rv){rv.muted=false;if(rv.playbackRate>=8) rv.playbackRate=1;}
 }
 }catch{}
 try{
