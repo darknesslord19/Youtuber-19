@@ -1,8 +1,8 @@
 <resources>
 	<string	name="app_name"	translatable="false">YouTube Pro</string>
-	<string	name="grant_mic">Please Grant Microphone Permission in order to use Speech Recognition</string>
-	<string	name="grant_storage">Please Grant Storage Permission in order to download files</string>
-	<string	name="no_pip">Unfortunately, PIP is not supported on your Android version</string>
-	<string	name="dl_started">Download started</string>
-	<string	name="dl">Download</string>
+	<string	name="grant_mic">Sesli arama için lütfen mikrofon izni ver</string>
+	<string	name="grant_storage">Dosya indirmek için lütfen depolama izni ver</string>
+	<string	name="no_pip">Maalesef Android sürümün resim içinde resim modunu desteklemiyor</string>
+	<string	name="dl_started">İndirme başladı</string>
+	<string	name="dl">İndir</string>
 </resources>

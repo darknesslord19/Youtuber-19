@@ -12,7 +12,7 @@ window.ytproSabrDownload= async function() {
 
 var ytproDownDiv=getDownloadElement();
 
-ytproDownDiv.querySelector("#videoViewDiv").innerHTML="Loading...";
+ytproDownDiv.querySelector("#videoViewDiv").innerHTML="Yükleniyor...";
 
 
 //Get Video ID
@@ -29,7 +29,7 @@ videoId=new URLSearchParams(window.location.search).get("v");
 //videoId="vY31qIX7LzQ";
 
 
-if (!videoId) { window.Android?.showToast?.('No video ID found in URL.'); return; }
+if (!videoId) { window.Android?.showToast?.('Bağlantıda video kimliği bulunamadı.'); return; }
 
 // Imports
 const { Innertube, Platform, Constants,IRawResponse } = await import(
@@ -196,7 +196,7 @@ const streamingData = info.streaming_data;
   
 
 if (!streamingData || !player) { 
-window.Android?.showToast?.('No streaming data or player found.'); 
+window.Android?.showToast?.('Video verisi veya oynatıcı bulunamadı.'); 
 return; 
 }
 
@@ -354,7 +354,7 @@ background:${d};
 
 
 
-ytproDownDiv.querySelector("#videoViewDiv").innerHTML=`<label for="selectLang" style="margin-right:5px;">Language:</label>`;
+ytproDownDiv.querySelector("#videoViewDiv").innerHTML=`<label for="selectLang" style="margin-right:5px;">Dil:</label>`;
 
 
 var langList=document.createElement("select");
@@ -445,7 +445,7 @@ audioOnlyDiv.innerHTML="";
 var formatDivider=document.createElement("li");
 
 formatDivider.innerHTML=`
-<span>Audio Only (${uniqueLanguages.filter( arr => { return arr.id==langId;})[0].name})</span> 
+<span>Sadece Ses (${uniqueLanguages.filter( arr => { return arr.id==langId;})[0].name})</span> 
 <span style="margin-left:10px;transform:rotate(180deg);"  >
 <svg style="margin-top:5px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${c}"  viewBox="0 0 18 18">
 <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
@@ -503,7 +503,7 @@ videoOnlyDiv.innerHTML="";
 var formatDivider=document.createElement("li");
 
 formatDivider.innerHTML=`
-<span>Video Only</span> 
+<span>Sadece Video (sessiz)</span> 
 <span style="margin-left:10px;transform:rotate(180deg);"  >
 <svg style="margin-top:5px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${c}"  viewBox="0 0 18 18">
 <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
@@ -577,7 +577,7 @@ div.innerHTML=`<style>cp{width:100%;height:auto;padding-bottom:8px;}c{height:45p
 
 var captions=info?.captions?.caption_tracks;
 
-if(!captions) return div.innerHTML=`No Captions Found`;
+if(!captions) return div.innerHTML=`Altyazı bulunamadı`;
 
 var t=`Captions ${safeTitle} YTPRO`;
 
@@ -646,7 +646,7 @@ downloadSABRStream(el.dataset.videoItag,null,el.dataset.isWebm,null,EnabledTrack
 
 if(info?.basic_info?.is_live || info?.basic_info?.is_live_content){
 
-ytproDownDiv.querySelector("#videoViewDiv").innerHTML="Downloading live streams <br>aren't supported at the moment";
+ytproDownDiv.querySelector("#videoViewDiv").innerHTML="Canlı yayınlar şu an <br>indirilemiyor";
 }else{
 updateMuxFormats();
 updateAudioOnlyFormats();
@@ -687,14 +687,14 @@ async function downloadSABRStream(videoItag,audioItag,isWebm,langId,enabledTrack
   
   
 if(!Android.isWebViewSupported()){
-  Android.showToast("Please Update your WebView.");
+  Android.showToast("Lütfen Android System WebView'ı güncelle.");
   return;
 }
 if(!Android.hasStoragePermission()){
   return;
 }
 
-Android.showToast("Download Started");
+Android.showToast("İndirme başladı");
 
 
 const containerExt = isWebm == "true" ? 'webm' : 'mp4';
@@ -876,7 +876,7 @@ downloadTasks.push(pipeToDisk(audioStream, audioFileName, estAudioBytes,audioEl.
 await Promise.all(downloadTasks);
 
 
-window.Android.showToast('Muxing formats...');
+window.Android.showToast('Ses ve video birleştiriliyor...');
 
 window.Android?.muxVideoAudio?.(videoFileName,audioFileName,`${safeTitle}_${new Date().getTime()}.${containerExt 
 }`);
@@ -928,9 +928,9 @@ if (!ytproDownDiv.contains(ev.target)) history.back();
 
 // Build tabs declaratively
 const TABS = [
-{ label: "Formats",    viewId: "videoViewDiv"    },
-{ label: "Thumbnails", viewId: "thumbViewDiv"    },
-{ label: "Captions",   viewId: "captionsViewDiv" },
+{ label: "Biçimler",    viewId: "videoViewDiv"    },
+{ label: "Kapaklar", viewId: "thumbViewDiv"    },
+{ label: "Altyazılar",   viewId: "captionsViewDiv" },
 ];
 
 const tabStyle = {
@@ -1136,8 +1136,8 @@ transition:0.25s;
 }
 </style>
 <br>
-<span style="opacity:0.8;"> INFO: Do NOT close YTPRO while we are downloading the files<br>
-(SABR streams are limited with 1-2 MBps speed by youtube servers)</span>
+<span style="opacity:0.8;"> BİLGİ: İndirme bitene kadar uygulamayı KAPATMA<br>
+(YouTube sunucuları bu indirmeleri 1-2 MB/sn ile sınırlıyor)</span>
 <br>
 `;
 

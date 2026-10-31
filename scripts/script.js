@@ -76,6 +76,8 @@ localStorage.setItem(x,"true");
 });
 
 }
+if(localStorage.getItem("resumePos") == null) localStorage.setItem("resumePos","true");
+if(localStorage.getItem("skipSilence") == null) localStorage.setItem("skipSilence","false");
 if(localStorage.getItem("fzoom") == "true"){
 document.getElementsByName("viewport")[0].setAttribute("content","");
 }
@@ -426,7 +428,7 @@ left:calc(15% / 2 );padding-left:10px;padding-right:10px;
 z-index:99999999999999;text-align:center;border-radius:25px;
 color:white;text-align:center;
 `);
-sSDiv.innerHTML=`<span style="height:30px;line-height:30px;margin-top:10px;display:block;font-family:monospace;font-size:16px;float:left;">Skipped Sponsor</span>
+sSDiv.innerHTML=`<span style="height:30px;line-height:30px;margin-top:10px;display:block;font-family:monospace;font-size:16px;float:left;">Sponsor atlandı</span>
 <span style="height:30px;line-height:44px;float:right;padding-right:30px;margin-top:10px;display:block;padding-left:30px;border-left:1px solid white;">
 <svg data-action="rewind" xmlns="http://www.w3.org/2000/svg" width="23" height="23" style="margin-top:0px;" fill="currentColor" viewBox="0 0 16 16">
 <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
@@ -520,7 +522,7 @@ return t;
 
 /*Get Codecs*/
 function getYTPROCodecs(){
-var t=`<p style="text-align:center;font-size:14px;">This feature is experimental , this may break YTPro if not configured correctly. By default all the codecs are enabled , tap on the buttons below to switch them.</p><br> <vc  style="font-size:14px;">Video Codecs</vc><br>`;
+var t=`<p style="text-align:center;font-size:14px;">Bu özellik deneyseldir, yanlış ayarlanırsa uygulama düzgün çalışmayabilir. Varsayılan olarak tüm kodekler açıktır, değiştirmek için aşağıdaki butonlara dokun.</p><br> <vc  style="font-size:14px;">Video Kodekleri</vc><br>`;
 
 for(var y in YTPROCodecs.video){
 
@@ -533,7 +535,7 @@ t+=`<button data-action="setRemoveCodec" data-value="${x}" ${("true" == localSto
 </button>`;
 }
 
-t+=`<br><br><vc  style="font-size:14px">Audio Codecs</vc><br>`
+t+=`<br><br><vc  style="font-size:14px">Ses Kodekleri</vc><br>`
 for(var y in YTPROCodecs.audio){
 
 var x=YTPROCodecs.audio[y];
@@ -546,9 +548,9 @@ t+=`<button data-action="setRemoveCodec" data-value="${x}" ${("true" == localSto
 }
 
 t+=`<br><br>
-<div>Block 60FPS <span data-action="block_60fps" style="${sttCnf(0,0,"block_60fps")}" ><b style="${sttCnf(0,1,"block_60fps")}" ></b></span></div> `;
+<div>60 FPS'yi Engelle <span data-action="block_60fps" style="${sttCnf(0,0,"block_60fps")}" ><b style="${sttCnf(0,1,"block_60fps")}" ></b></span></div> `;
 
-t+=`<br><br><button data-action="done" style="margin-top:10px;width:25%;float:right;text-align:center;background:${c};color:${dc};" >Done</button>`;
+t+=`<br><br><button data-action="done" style="margin-top:10px;width:25%;float:right;text-align:center;background:${c};color:${dc};" >Tamam</button>`;
 
 
 return t;
@@ -722,7 +724,7 @@ color:${c};
 }
 </style>`;
 ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
-<span style="font-size:10px">v${YTProVer}</span>
+<span style="font-size:10px">v${Android.getInfo()}</span>
 <br><br>
 <div><input type="url" placeholder="YouTube bağlantısı girin" id="ytproUrlInput" ></div>
 <br>
@@ -747,6 +749,10 @@ ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
 <div>Yakınlaştırmayı Zorla <span data-action="sttCnf" data-value="fzoom"  style="${sttCnf(0,0,"fzoom")}" ><b style="${sttCnf(0,1,"fzoom")}" ></b></span></div> 
 <br>
 <div>Arka Planda Oynatma <span data-action="sttCnf" data-value="bgplay" style="${sttCnf(0,0,"bgplay")}" ><b style="${sttCnf(0,1,"bgplay")}" ></b></span></div> 
+<br>
+<div>Kaldığın Yerden Devam <span data-action="sttCnf" data-value="resumePos" style="${sttCnf(0,0,"resumePos")}" ><b style="${sttCnf(0,1,"resumePos")}" ></b></span></div>
+<br>
+<div>Sessiz Kısımları Atla <span data-action="sttCnf" data-value="skipSilence" style="${sttCnf(0,0,"skipSilence")}" ><b style="${sttCnf(0,1,"skipSilence")}" ></b></span></div>
 <br>
 <div>Shorts'u Gizle <span data-action="sttCnf" data-value="shorts" style="${sttCnf(0,0,"shorts")}" ><b style="${sttCnf(0,1,"shorts")}" ></b></span></div> 
 <br>
@@ -826,7 +832,8 @@ var actionsList={
     window.location.hash='#hearts';
   },
   checkUpdate:()=>{
-    checkUpdates();
+    checkUpdates(false);
+    ytproRefreshScripts();
   },
   sttCnf:(button,action)=>{
     sttCnf(button,action);
@@ -838,7 +845,7 @@ var actionsList={
     document.getElementsByClassName('geminiPrompt')[0].style.display='block';
   },
   issues:()=>{
-    Android.oplink('https://github.com/prateek-chaubey/YTPRO/issues');
+    Android.oplink('https://github.com/darknesslord19/Youtuber-19/issues');
   },
   disableCodecs:()=>{
     document.getElementsByClassName('disableCodecs')[0].style.display='block';document.getElementsByClassName('disableCodecs')[0].innerHTML=getYTPROCodecs();
@@ -927,13 +934,7 @@ a.click();
 }
 }
 
-function checkUpdates(){
-if(parseFloat(Android.getInfo()) < parseFloat(YTProVer) ){
-updateModel();
-}else{
-Android.showToast("Your app is up to date");
-}
-
+function ytproRefreshScripts(){
 fetch('https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/script.js', {cache: 'reload'});
 fetch('https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/bgplay.js', {cache: 'reload'});
 fetch('https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/scripts/innertube.js', {cache: 'reload'});
@@ -1431,7 +1432,7 @@ ${converter.makeHtml(thoughts)}
 
 </div><br>` : "";
 
-document.getElementById("GeminiResponse").innerHTML=`<a href="https://gemini.google.com/chat/${chat[0].replace("c_","")}" >Go to the chat</a><br><br>
+document.getElementById("GeminiResponse").innerHTML=`<a href="https://gemini.google.com/chat/${chat[0].replace("c_","")}" >Sohbete git</a><br><br>
 
 ${thoughtsHtml}
 
@@ -1472,10 +1473,10 @@ var cookies=Android.getAllCookies(window.location.href);
 if(cookies.indexOf("__Secure-1PSID=") < 0){
 GeminiRes.innerHTML=`
 <center style="margin-top:15px">
-<span >Sign in to use Gemini<span>
+<span >Gemini'yi kullanmak için giriş yap<span>
 <br><br>
 <a href="https://accounts.google.com/ServiceLogin?service=youtube" >
-<button style="background:${c};color:${isD ? "#000" : "#fff"};font-weight:500;height:35px;width:90px;border-radius:25px;text-align:center;line-height:35px;">Sign In</button>
+<button style="background:${c};color:${isD ? "#000" : "#fff"};font-weight:500;height:35px;width:90px;border-radius:25px;text-align:center;line-height:35px;">Giriş Yap</button>
 </a>
 <br><br>
 
@@ -1827,11 +1828,6 @@ ytproGemini.addEventListener("click",
 async function(){
 
 
-if(parseFloat(Android.getInfo()) < parseFloat(YTProVer)){
-updateModel();
-
-return;
-}
 
 geminiInfo();
 
@@ -2011,7 +2007,7 @@ position:absolute;bottom:20px;
 z-index:9;padding:20px;text-align:center;border-radius:25px;text-align:center;
 `);
 ytproHh.innerHTML=`<style>#heartytprodiv a{text-decoration:none;} #heartytprodiv li{list-style:none; display:flex;align-items:center;border-radius:15px;padding:0px;background:${d};margin:5px;}</style>`;
-ytproHh.innerHTML+="Liked Videos<ul id='listurl'>";
+ytproHh.innerHTML+="Beğenilen Videolar<ul id='listurl'>";
 
 
 ytproHh.innerHTML+="<style>.thum{height:70px;border-radius:5px;}.thum img{float:left;height:70px;width:125px;border-radius:15px 0 0 15px;flex-shrink: 0;}</style>";
@@ -2029,13 +2025,13 @@ history.back();
 
 
 if(localStorage.getItem("hearts") == null){
-ytproHh.innerHTML+="No Videos Found";
+ytproHh.innerHTML+="Video bulunamadı";
 }else{
 
 var v=JSON.parse(localStorage.getItem("hearts"));
 
 if(Object.keys(v).length === 0){
-return ytproHh.innerHTML+="No Videos Found";
+return ytproHh.innerHTML+="Video bulunamadı";
 }
 
 for(var n=Object.keys(v).length - 1; n >  -1 ; n--){
@@ -2659,59 +2655,94 @@ observer.observe(targetNode, config);
 
 
 
-/*Update your app bruh*/
-function updateModel(){
+/*Güncelleme sistemi (Darkness Lord)*/
+var YTPRO_UPDATE_SOURCES=[
+"https://raw.githubusercontent.com/darknesslord19/Youtuber-19/main/version.json",
+"https://youtube.com/ytpro_cdn/gh/darknesslord19/Youtuber-19@main/version.json"
+];
+
+function ytproCompareVer(a,b){
+var x=String(a).split(".").map(n=>parseInt(n)||0);
+var y=String(b).split(".").map(n=>parseInt(n)||0);
+for(var i=0;i<Math.max(x.length,y.length);i++){
+var d=(x[i]||0)-(y[i]||0);
+if(d!=0) return d>0?1:-1;
+}
+return 0;
+}
+
+async function ytproGetLatest(){
+for(var u of YTPRO_UPDATE_SOURCES){
+try{
+var r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});
+if(!r.ok) continue;
+var j=await r.json();
+if(j && j.version) return j;
+}catch(e){}
+}
+return null;
+}
+
+async function checkUpdates(silent){
+var info=await ytproGetLatest();
+if(!info){
+if(!silent) Android.showToast("Güncelleme bilgisi alınamadı, internetini kontrol et");
+return;
+}
+try{localStorage.setItem("ytproLastUpdCheck",String(Date.now()));}catch{}
+if(ytproCompareVer(info.version, Android.getInfo()) > 0){
+if(silent && localStorage.getItem("ytproSkipVer") == info.version) return;
+updateModel(info);
+}else if(!silent){
+Android.showToast("Uygulaman güncel (v"+Android.getInfo()+")");
+}
+}
+
+function updateModel(info){
+if(document.getElementById("ytproUpdModal")) return;
 var x=document.createElement("div");
-
+x.id="ytproUpdModal";
 x.setAttribute("style",`height:100%;width:100%;position:fixed;display:grid;align-items:center;top:0;left:0;background:rgba(0,0,0,.6);z-index:99999;`);
-
+var notes=(info.notes||[]).map(n=>"- "+String(n).replace(/</g,"&lt;")).join("<br>");
 x.innerHTML=`
-<div style="height:auto;width:70%;padding:20px;background:rgba(0,0,0,.6);border:1px solid #888;box-shadow:0px 0px 5px black;color:white;backdrop-filter:blur(10px);border-radius:15px;margin:auto">
-<h2> Update Available</h2><br>
-Latest Version ${YTProVer} of YTPRO is available , update the YTPRO to get latest features.
-<br>
-- Fixed Downloader<br>
-- Added container lables on Audio Only<br>
-- Fixed Gemini Bugs , added new models<br>
-- Optimized overall UI<br>
-- Fixed bugs and improved functionality<br>
-- for the full list <u data-action="url" >click here</u>
-<br>
-<br>
-<div style="display:flex;">
-<button style="border:0;border-radius:10px;height:30px;width:150px;background:;" data-action="cancel">Cancel</button>
-<button style="border:0;border-radius:10px;height:30px;width:150px;background:rgba(255,50,50,.7);float:right;" data-action="download" >Download</button>
+<div style="height:auto;width:75%;padding:20px;background:rgba(0,0,0,.6);border:1px solid #888;box-shadow:0px 0px 5px black;color:white;backdrop-filter:blur(10px);border-radius:15px;margin:auto">
+<h2>Güncelleme Var</h2><br>
+Yeni sürüm <b>v${info.version}</b> hazır (sende v${Android.getInfo()} var).
+<br><br>
+${notes}
+${notes ? "<br><br>" : ""}
+<u data-action="url">Sürüm sayfasını aç</u>
+<br><br>
+<div style="display:flex;gap:10px;">
+<button style="border:0;border-radius:10px;height:34px;flex:1;" data-action="cancel">Daha Sonra</button>
+<button style="border:0;border-radius:10px;height:34px;flex:1;background:rgba(255,50,50,.7);color:white;" data-action="download">İndir</button>
 </div>
-
 </div>
 `;
 
 x.addEventListener("click",(e)=>{
-  var el=e.target.closest("[data-action]");
-  if(!el) return;
-  var action=el.dataset.action;
-  
-  if(action == "url"){
-    Android.oplink('https://github.com/prateek-chaubey/YTPRO/releases');
-  }else if(action == "download"){
-    Android.downvid('YTPRO.zip','https://nightly.link/prateek-chaubey/YTPro/workflows/gradle/main/YTPRO.zip','application/zip');  
-  }else if(action =="cancel"){
-    el.parentElement.parentElement.parentElement.remove();
-  }
-  
-})
+var el=e.target.closest("[data-action]");
+if(!el) return;
+var action=el.dataset.action;
+if(action == "url"){
+Android.oplink(info.page || "https://github.com/darknesslord19/Youtuber-19/releases/latest");
+}else if(action == "download"){
+Android.downvid("YTPRO-v"+info.version+".apk", info.apk || "https://github.com/darknesslord19/Youtuber-19/releases/latest/download/youtube_pro_signed.apk","application/vnd.android.package-archive");
+x.remove();
+}else if(action =="cancel"){
+try{localStorage.setItem("ytproSkipVer",info.version);}catch{}
+x.remove();
+}
+});
 
 document.body.appendChild(x);
 }
 
- 
-
-window.onload = function(){
-if(parseFloat(Android.getInfo()) < parseFloat(YTProVer) && (window.location.href == "https://m.youtube.com/" || window.location.href == "https://m.youtube.com") ){
-updateModel();
-}
-
-};
+/*Açılışta sessiz kontrol (6 saatte bir)*/
+setTimeout(()=>{
+var last=parseInt(localStorage.getItem("ytproLastUpdCheck")||"0");
+if(Date.now()-last > 6*60*60*1000) checkUpdates(true);
+},4000);
 
 
 
@@ -2759,5 +2790,110 @@ function showCurtain(){
   function hideCurtain(){
     document.getElementById("ytProCurtain")?.remove()
   }
+
+
+
+/******** Darkness Lord eklentileri ********/
+
+/*Kaldığın yerden devam*/
+(function(){
+var KEY="ytproResume";
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}");}catch(e){return {};}}
+function store(o){try{localStorage.setItem(KEY,JSON.stringify(o));}catch(e){}}
+function urlId(){
+if(location.pathname.indexOf("/watch")<0) return null;
+return new URLSearchParams(location.search).get("v");
+}
+function playerId(){
+try{var mp=document.getElementById("movie_player");return mp.getVideoData().video_id;}catch(e){return null;}
+}
+function fmt(s){s=Math.floor(s);var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0");}
+var curId=null,restored=false,lastSave=0;
+setInterval(function(){
+if(localStorage.getItem("resumePos")!="true") return;
+var id=urlId();
+if(id!==curId){curId=id;restored=false;}
+if(!id) return;
+var v=document.getElementsByClassName("video-stream")[0];
+if(!v || document.querySelector(".ad-interrupting")) return;
+if(playerId()!==id) return;
+var d=v.duration;
+if(!isFinite(d) || d<=0 || v.readyState<1) return;
+
+if(!restored){
+restored=true;
+if(new URLSearchParams(location.search).get("t")) return;
+var e=load()[id];
+if(e && e.t>15 && e.t<d-20 && v.currentTime<e.t-5){
+v.currentTime=e.t;
+Android.showToast("Kaldığın yerden devam: "+fmt(e.t));
+}
+return;
+}
+
+var now=Date.now();
+if(now-lastSave<5000) return;
+lastSave=now;
+if(d<120) return;
+var all=load();
+var pos=v.currentTime;
+if(pos>d-20){delete all[id];}
+else if(pos>15){all[id]={t:Math.floor(pos),at:now};}
+else return;
+var keys=Object.keys(all);
+if(keys.length>300){keys.sort(function(a,b){return all[a].at-all[b].at;}).slice(0,keys.length-300).forEach(function(k){delete all[k];});}
+store(all);
+},1000);
+})();
+
+
+/*Sessiz kısımları atla*/
+(function(){
+var st={ctx:null,an:null,buf:null,el:null,since:0,fast:false,userRate:1};
+var THR=0.008, WAIT=250, FAST=3;
+function hook(v){
+if(st.el===v) return true;
+if(!v.src || v.src.indexOf("blob:")!==0) return false;
+try{
+st.ctx=st.ctx||new (window.AudioContext||window.webkitAudioContext)();
+var src=st.ctx.createMediaElementSource(v);
+var an=st.ctx.createAnalyser();
+an.fftSize=1024;
+src.connect(an);
+an.connect(st.ctx.destination);
+st.an=an;st.buf=new Float32Array(an.fftSize);st.el=v;
+v.addEventListener("play",function(){try{st.ctx.resume();}catch(e){}});
+return true;
+}catch(e){return false;}
+}
+function normal(v){
+if(st.fast && v){try{v.playbackRate=st.userRate;}catch(e){}}
+st.fast=false;st.since=0;
+}
+setInterval(function(){
+var v=document.getElementsByClassName("video-stream")[0];
+if(st.ctx && st.ctx.state!=="running" && v && !v.paused){try{st.ctx.resume();}catch(e){}}
+if(localStorage.getItem("skipSilence")!="true" || !v || location.pathname.indexOf("/watch")<0 || document.querySelector(".ad-interrupting")){
+normal(v);return;
+}
+if(v.paused || v.seeking) {normal(v);return;}
+if(!hook(v)) return;
+if(st.ctx.state!=="running"){try{st.ctx.resume();}catch(e){}return;}
+st.an.getFloatTimeDomainData(st.buf);
+var sum=0;for(var i=0;i<st.buf.length;i++){sum+=st.buf[i]*st.buf[i];}
+var rms=Math.sqrt(sum/st.buf.length);
+var now=Date.now();
+if(rms<THR){
+if(!st.since) st.since=now;
+if(!st.fast && now-st.since>WAIT){
+st.userRate=v.playbackRate;
+v.playbackRate=Math.min(16,Math.max(FAST,st.userRate*2));
+st.fast=true;
+}
+}else{
+normal(v);
+}
+},100);
+})();
 
 }

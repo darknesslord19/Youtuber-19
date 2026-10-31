@@ -122,12 +122,12 @@ public class WebAppInterface {
 			@Override
 			public void onSuccess(File output) {
 				// safe to update UI here — already on main thread
-				Toast.makeText(activity, "Done: " + output.getName(), Toast.LENGTH_SHORT).show();
+				Toast.makeText(activity, "Tamamlandı: " + output.getName(), Toast.LENGTH_SHORT).show();
 			}
 			
 			@Override
 			public void onFailure(Exception e) {
-				Toast.makeText(activity, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+				Toast.makeText(activity, "Başarısız: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 			}
 		});
 	}

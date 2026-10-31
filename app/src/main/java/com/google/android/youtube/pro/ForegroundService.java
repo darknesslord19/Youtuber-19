@@ -95,7 +95,7 @@ public class ForegroundService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Background Play",
+                    "Arka Planda Oynatma",
                     NotificationManager.IMPORTANCE_MIN
             );
             notificationManager = getSystemService(NotificationManager.class);
@@ -155,18 +155,18 @@ public class ForegroundService extends Service {
                 .setLargeIcon(largeIcon)
                 .setContentIntent(openAppPendingIntent)
                 .setStyle(new Notification.MediaStyle().setMediaSession(mediaSession.getSessionToken()))
-                .addAction(R.drawable.ic_skip_previous_white, "Previous", prevPendingIntent);
+                .addAction(R.drawable.ic_skip_previous_white, "Önceki", prevPendingIntent);
 
         if ("play".equals(action)) {
-            builder.addAction(R.drawable.ic_pause_white, "Pause", pausePendingIntent)
-                    .addAction(R.drawable.ic_skip_next_white, "Next", nextPendingIntent);
+            builder.addAction(R.drawable.ic_pause_white, "Duraklat", pausePendingIntent)
+                    .addAction(R.drawable.ic_skip_next_white, "Sonraki", nextPendingIntent);
         } else if ("pause".equals(action))  {
-            builder.addAction(R.drawable.ic_play_arrow_white, "Play", playPendingIntent)
-                    .addAction(R.drawable.ic_skip_next_white, "Next", nextPendingIntent);
+            builder.addAction(R.drawable.ic_play_arrow_white, "Oynat", playPendingIntent)
+                    .addAction(R.drawable.ic_skip_next_white, "Sonraki", nextPendingIntent);
         }else{
 
-            builder.addAction(R.drawable.ic_pause_white, "Pause", pausePendingIntent)
-                    .addAction(R.drawable.ic_skip_next_white, "Next", nextPendingIntent);
+            builder.addAction(R.drawable.ic_pause_white, "Duraklat", pausePendingIntent)
+                    .addAction(R.drawable.ic_skip_next_white, "Sonraki", nextPendingIntent);
 
         }
 
@@ -266,11 +266,11 @@ public class ForegroundService extends Service {
                 .setContentIntent(openAppPendingIntent);
 
 
-        builder.addAction(R.drawable.ic_skip_previous_white, "Previous", prevPendingIntent);
+        builder.addAction(R.drawable.ic_skip_previous_white, "Önceki", prevPendingIntent);
         
-                    builder.addAction(R.drawable.ic_pause_white, "Pause", pausePendingIntent);
+                    builder.addAction(R.drawable.ic_pause_white, "Duraklat", pausePendingIntent);
                     
-                builder.addAction(R.drawable.ic_skip_next_white, "Next", nextPendingIntent);
+                builder.addAction(R.drawable.ic_skip_next_white, "Sonraki", nextPendingIntent);
 
         Notification notification = builder.build();
 

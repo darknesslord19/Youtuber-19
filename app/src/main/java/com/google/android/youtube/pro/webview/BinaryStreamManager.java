@@ -43,8 +43,8 @@ public class BinaryStreamManager {
 
     public void openStreamForFile(String fileName) {
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER)) {
-            Log.e("YTPRO_STREAM", "ArrayBuffer not supported on this device.");
-            Toast.makeText(context, "ArrayBuffer not supported on this device.", Toast.LENGTH_SHORT).show();
+            Log.e("YTPRO_STREAM", "Bu cihaz bu indirme türünü desteklemiyor.");
+            Toast.makeText(context, "Bu cihaz bu indirme türünü desteklemiyor.", Toast.LENGTH_SHORT).show();
    
             return;
         }
