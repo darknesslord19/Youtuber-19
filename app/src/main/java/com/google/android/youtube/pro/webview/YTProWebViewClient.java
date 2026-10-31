@@ -131,16 +131,8 @@ public class YTProWebViewClient extends WebViewClient {
 		
 		if (url.contains("youtube.com/ytpro_cdn/gh/") && ScriptCache.key(url).endsWith(".js") && "GET".equalsIgnoreCase(request.getMethod())) {
 			String real = url.replace("youtube.com/ytpro_cdn", "cdn.jsdelivr.net");
-			boolean force = false;
-			for (Map.Entry<String, String> h : request.getRequestHeaders().entrySet()) {
-				if (h.getKey() != null && h.getKey().equalsIgnoreCase("Cache-Control") && h.getValue() != null && h.getValue().contains("no-cache")) force = true;
-			}
-			byte[] body = force ? null : ScriptCache.read(activity, real);
-			if (body != null) {
-				ScriptCache.refreshAsync(activity, real);
-				return ScriptCache.response(body);
-			}
-			body = ScriptCache.fetch(activity, real);
+			// Önce internetten taze dosya; bağlantı yoksa telefondaki kopya
+			byte[] body = ScriptCache.fetch(activity, real);
 			if (body == null) body = ScriptCache.read(activity, real);
 			if (body != null) return ScriptCache.response(body);
 		}

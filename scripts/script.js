@@ -1992,7 +1992,7 @@ ytoldV=window.location.pathname;
 }
 
 
-setInterval(pkc,200);
+setInterval(pkc,400);
 setInterval(()=>{try{adsBlock();}catch{}},250);
 
 
@@ -2639,8 +2639,9 @@ el.appendChild(elm);
 const targetNode = document.body;
 const config = { childList: true, subtree: true };
 
-const observer = new MutationObserver(() => {
-
+var ytproObsPending=false, ytproLastFS=null;
+function ytproObserverTick(){
+ytproObsPending=false;
 
 //speed
 
@@ -2659,15 +2660,18 @@ addSettingsTab();
 
 try{
 var video = document.getElementsByClassName('video-stream')[0];
-if(video.getBoundingClientRect().height > video.getBoundingClientRect().width){
-Android.fullScreen(true);
+var r=video.getBoundingClientRect();
+Android.fullScreen(r.height > r.width);
 }
-else{
-Android.fullScreen(false);
-}}
 catch{}
 
+}
 
+/*Toplu çalıştır: her DOM değişikliğinde değil, en fazla 100 ms'de bir*/
+const observer = new MutationObserver(() => {
+if(ytproObsPending) return;
+ytproObsPending=true;
+setTimeout(ytproObserverTick,100);
 });
 
 // Start observing changes in the body
@@ -2998,6 +3002,9 @@ var D=null,box=null,lastUrl="",hooked=new WeakSet();
 function now(){return performance.now();}
 function sec(x){return x==null?"-":((x-D.t0)/1000).toFixed(1)+"s";}
 try{performance.setResourceTimingBufferSize(3000);}catch(e){}
+var LT=[];
+try{new PerformanceObserver(function(l){l.getEntries().forEach(function(e){LT.push([e.startTime,e.duration]);if(LT.length>2000)LT.shift();});}).observe({type:"longtask",buffered:true});}catch(e){}
+function busy(){var s=0;for(var i=0;i<LT.length;i++){if(LT[i][0]>=D.t0)s+=LT[i][1];}return (s/1000).toFixed(1)+"s";}
 function slowest(){
 try{
 var es=performance.getEntriesByType("resource").filter(function(e){return e.startTime>=D.t0-300;});
@@ -3048,7 +3055,7 @@ box.textContent=
 "durum: rs="+(v?v.readyState:"-")+" ns="+(v?v.networkState:"-")+" "+(v&&v.paused?"duraklatıldı":"oynuyor")+"\n"+
 "hız: "+(v?v.playbackRate:"-")+"x  ses: "+(v?(v.muted?"kapalı":"açık"):"-")+"\n"+
 "ses motoru: "+(A&&A.el?(A.mode||"açık")+" "+(A.ctx?A.ctx.state:""):"kapalı")+"\n"+
-"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı")+"\nEN YAVAŞ İSTEKLER:\n"+slowest();
+"devam: "+(localStorage.getItem("resumePos")=="true"?"açık":"kapalı")+"  sponsor: "+(localStorage.getItem("autoSpn")=="true"?"açık":"kapalı")+"\nişlemci meşgul: "+busy()+"\nEN YAVAŞ İSTEKLER:\n"+slowest();
 },250);
 })();
 

@@ -21,8 +21,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 /*
  * Darkness Lord: YTPRO scriptlerini telefonda saklar.
- * Açılışta kayıtlı kopya anında verilir, yeni sürüm arka planda indirilir
- * (bir sonraki açılışta devreye girer). "Güncellemeleri Denetle" anında yeniler.
+ * Her açılışta önce taze dosya indirilir; internet yoksa kayıtlı kopya kullanılır.
  */
 public final class ScriptCache {
 
@@ -100,8 +99,8 @@ public final class ScriptCache {
 		HttpsURLConnection con = null;
 		try {
 			con = (HttpsURLConnection) new URL(u).openConnection();
-			con.setConnectTimeout(8000);
-			con.setReadTimeout(15000);
+			con.setConnectTimeout(4000);
+			con.setReadTimeout(8000);
 			con.setUseCaches(false);
 			con.setRequestProperty("Cache-Control", "no-cache");
 			con.setRequestProperty("User-Agent", "YTPRO");
