@@ -752,6 +752,15 @@ ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
 <br>
 <div>Kaldığın Yerden Devam <span data-action="sttCnf" data-value="resumePos" style="${sttCnf(0,0,"resumePos")}" ><b style="${sttCnf(0,1,"resumePos")}" ></b></span></div>
 <br>
+<b style="display:block;text-align:left;margin:6px 10px 10px;opacity:.7;font-size:13px;">SES GELİŞTİRME</b>
+<div>Ses Yükseltici <select onchange="try{localStorage.setItem('audioBoost',this.value)}catch(e){}" style="position:absolute;right:10px;border:0;border-radius:20px;padding:6px 10px;background:${d};color:${c};font-size:14px;">
+${[100,150,200,300].map(x=>`<option value="${x}" ${String(localStorage.getItem("audioBoost")||"100")==String(x)?"selected":""}>${x==100?"Kapalı":"%"+x}</option>`).join("")}
+</select></div>
+<br>
+<div>Ses Dengeleme <span data-action="sttCnf" data-value="audioComp" style="${sttCnf(0,0,"audioComp")}" ><b style="${sttCnf(0,1,"audioComp")}" ></b></span></div>
+<br>
+<div>Konuşma Netleştirme <span data-action="sttCnf" data-value="audioVoice" style="${sttCnf(0,0,"audioVoice")}" ><b style="${sttCnf(0,1,"audioVoice")}" ></b></span></div>
+<br>
 <div>Sessiz Kısımları Atla <span data-action="sttCnf" data-value="skipSilence" style="${sttCnf(0,0,"skipSilence")}" ><b style="${sttCnf(0,1,"skipSilence")}" ></b></span></div>
 <br>
 <div>Shorts'u Gizle <span data-action="sttCnf" data-value="shorts" style="${sttCnf(0,0,"shorts")}" ><b style="${sttCnf(0,1,"shorts")}" ></b></span></div> 
@@ -2452,10 +2461,21 @@ for(var x in ads){
 try{ads[x].remove();}catch{}
 }
 try{
-var adV=document.getElementsByClassName("ad-interrupting")[0].getElementsByTagName("video")[0];
+var adBox=document.getElementsByClassName("ad-interrupting")[0];
+var mainV=document.getElementsByClassName("video-stream")[0];
+if(adBox){
+var adV=adBox.getElementsByTagName("video")[0];
+if(adV){
+if(!window.ytproAdState) window.ytproAdState={el:adV,muted:adV.muted};
 adV.muted=true;
-adV.playbackRate=16;
-if(isFinite(adV.duration) && adV.duration > 0) adV.currentTime=adV.duration;
+if(isFinite(adV.duration) && adV.duration > 0){adV.currentTime=adV.duration;}
+else{adV.playbackRate=16;}
+}
+}else if(window.ytproAdState){
+var s=window.ytproAdState;window.ytproAdState=null;
+var rv=s.el||mainV;
+if(rv){rv.muted=s.muted;if(rv.playbackRate>=8) rv.playbackRate=1;}
+}
 }catch{}
 try{
 var skB=document.querySelector(".ytp-ad-skip-button-modern, .ytp-skip-ad-button, .ytp-ad-skip-button");
@@ -2847,53 +2867,125 @@ store(all);
 })();
 
 
-/*Sessiz kısımları atla*/
+/*Ses motoru: sessizlik atlama + ses yükseltici + dengeleme + konuşma netleştirme*/
 (function(){
-var st={ctx:null,an:null,buf:null,el:null,since:0,fast:false,userRate:1};
-var THR=0.008, WAIT=250, FAST=3;
+var A={ctx:null,el:null,n:{},mode:null,silent:false,fast:false,userRate:1,fastTimer:null,warned:false};
+window.ytproAudio=A;
+var THR=0.008, WAIT=350, FAST=2;
+var WORKLET="class D extends AudioWorkletProcessor{constructor(){super();this.s=false;this.a=0;this.c=0;this.thr="+THR+";}process(i){var x=i[0];if(x&&x.length){for(var h=0;h<x.length;h++){var d=x[h];for(var k=0;k<d.length;k++){this.a+=d[k]*d[k];}this.c+=d.length;}}if(this.c>=2048){var r=Math.sqrt(this.a/this.c);this.a=0;this.c=0;var s=r<this.thr;if(s!==this.s){this.s=s;this.port.postMessage(s);}}return true;}}registerProcessor('ytpro-silence',D);";
+
+function cfg(){
+return {
+skip:localStorage.getItem("skipSilence")=="true",
+boost:parseInt(localStorage.getItem("audioBoost")||"100")||100,
+comp:localStorage.getItem("audioComp")=="true",
+voice:localStorage.getItem("audioVoice")=="true"
+};
+}
+function anyOn(c){return c.skip||c.boost>100||c.comp||c.voice;}
+function vid(){return document.getElementsByClassName("video-stream")[0];}
+function onWatch(){return location.pathname.indexOf("/watch")>-1;}
+function adOn(){return !!document.querySelector(".ad-interrupting");}
+
 function hook(v){
-if(st.el===v) return true;
+if(A.el===v) return true;
+if(A.el) return false;
 if(!v.src || v.src.indexOf("blob:")!==0) return false;
 try{
-st.ctx=st.ctx||new (window.AudioContext||window.webkitAudioContext)();
-var src=st.ctx.createMediaElementSource(v);
-var an=st.ctx.createAnalyser();
-an.fftSize=1024;
-src.connect(an);
-an.connect(st.ctx.destination);
-st.an=an;st.buf=new Float32Array(an.fftSize);st.el=v;
-v.addEventListener("play",function(){try{st.ctx.resume();}catch(e){}});
+var C=window.AudioContext||window.webkitAudioContext;
+A.ctx=new C({latencyHint:"interactive"});
+var ctx=A.ctx,n=A.n;
+n.src=ctx.createMediaElementSource(v);
+n.hp=ctx.createBiquadFilter();n.hp.type="highpass";n.hp.frequency.value=10;
+n.mud=ctx.createBiquadFilter();n.mud.type="peaking";n.mud.frequency.value=300;n.mud.Q.value=1;n.mud.gain.value=0;
+n.pres=ctx.createBiquadFilter();n.pres.type="peaking";n.pres.frequency.value=3000;n.pres.Q.value=0.9;n.pres.gain.value=0;
+n.comp=ctx.createDynamicsCompressor();
+n.gain=ctx.createGain();
+n.lim=ctx.createDynamicsCompressor();
+n.lim.threshold.value=-1;n.lim.knee.value=0;n.lim.ratio.value=20;n.lim.attack.value=0.001;n.lim.release.value=0.1;
+n.src.connect(n.hp);n.hp.connect(n.mud);n.mud.connect(n.pres);n.pres.connect(n.comp);n.comp.connect(n.gain);n.gain.connect(n.lim);n.lim.connect(ctx.destination);
+A.el=v;
+v.addEventListener("play",function(){try{A.ctx.resume();}catch(e){}});
+v.addEventListener("seeking",function(){normal();});
+v.addEventListener("pause",function(){normal();});
+setupDetector();
 return true;
 }catch(e){return false;}
 }
-function normal(v){
-if(st.fast && v){try{v.playbackRate=st.userRate;}catch(e){}}
-st.fast=false;st.since=0;
+
+function setupDetector(){
+var ctx=A.ctx,n=A.n;
+try{
+var url=URL.createObjectURL(new Blob([WORKLET],{type:"application/javascript"}));
+ctx.audioWorklet.addModule(url).then(function(){
+n.det=new AudioWorkletNode(ctx,"ytpro-silence",{numberOfInputs:1,numberOfOutputs:1});
+n.sink=ctx.createGain();n.sink.gain.value=0;
+n.src.connect(n.det);n.det.connect(n.sink);n.sink.connect(ctx.destination);
+n.det.port.onmessage=function(e){onSilence(e.data);};
+A.mode="worklet";
+}).catch(analyserMode);
+}catch(e){analyserMode();}
 }
+function analyserMode(){
+var n=A.n;
+n.an=A.ctx.createAnalyser();n.an.fftSize=1024;n.buf=new Float32Array(1024);
+n.src.connect(n.an);
+A.mode="analyser";
+}
+
+function normal(){
+clearTimeout(A.fastTimer);A.fastTimer=null;
+if(A.fast && A.el){try{A.el.playbackRate=A.userRate;}catch(e){}}
+A.fast=false;
+}
+function onSilence(s){
+A.silent=s;
+var v=A.el;
+if(!s || !v){normal();return;}
+var c=cfg();
+if(!c.skip || v.paused || v.seeking || !onWatch() || adOn()) return;
+if(A.fast || A.fastTimer) return;
+A.fastTimer=setTimeout(function(){
+A.fastTimer=null;
+if(!A.silent || v.paused || adOn() || !cfg().skip) return;
+A.userRate=v.playbackRate;
+if(A.userRate>=FAST) return;
+v.playbackRate=FAST;
+A.fast=true;
+},WAIT);
+}
+
+function setP(p,val){try{p.setTargetAtTime(val,A.ctx.currentTime,0.05);}catch(e){p.value=val;}}
+function apply(c){
+var n=A.n;
+setP(n.hp.frequency,c.voice?100:10);
+setP(n.mud.gain,c.voice?-3:0);
+setP(n.pres.gain,c.voice?5:0);
+if(c.comp){n.comp.threshold.value=-30;n.comp.knee.value=20;n.comp.ratio.value=4;n.comp.attack.value=0.005;n.comp.release.value=0.25;}
+else{n.comp.threshold.value=0;n.comp.knee.value=0;n.comp.ratio.value=1;}
+var g=(c.boost/100)*(c.comp?1.8:1)*(c.voice?0.85:1);
+setP(n.gain.gain,g);
+}
+
 setInterval(function(){
-var v=document.getElementsByClassName("video-stream")[0];
-if(st.ctx && st.ctx.state!=="running" && v && !v.paused){try{st.ctx.resume();}catch(e){}}
-if(localStorage.getItem("skipSilence")!="true" || !v || location.pathname.indexOf("/watch")<0 || document.querySelector(".ad-interrupting")){
-normal(v);return;
-}
-if(v.paused || v.seeking) {normal(v);return;}
+var v=vid();
+var c=cfg();
+if(!A.el){
+if(!v || !anyOn(c)) return;
 if(!hook(v)) return;
-if(st.ctx.state!=="running"){try{st.ctx.resume();}catch(e){}return;}
-st.an.getFloatTimeDomainData(st.buf);
-var sum=0;for(var i=0;i<st.buf.length;i++){sum+=st.buf[i]*st.buf[i];}
-var rms=Math.sqrt(sum/st.buf.length);
-var now=Date.now();
-if(rms<THR){
-if(!st.since) st.since=now;
-if(!st.fast && now-st.since>WAIT){
-st.userRate=v.playbackRate;
-v.playbackRate=Math.min(16,Math.max(FAST,st.userRate*2));
-st.fast=true;
 }
-}else{
-normal(v);
+if(A.ctx.state!=="running" && v && !v.paused){try{A.ctx.resume();}catch(e){}}
+apply(c);
+if(!c.skip || !onWatch() || adOn()) normal();
+if(!anyOn(c) && !A.warned){A.warned=true;Android.showToast("Ses ayarlarını tamamen kapatmak için uygulamayı yeniden başlat");}
+if(anyOn(c)) A.warned=false;
+if(A.mode==="analyser" && c.skip && v && !v.paused){
+A.n.an.getFloatTimeDomainData(A.n.buf);
+var sum=0;for(var i=0;i<A.n.buf.length;i++){sum+=A.n.buf[i]*A.n.buf[i];}
+var s=Math.sqrt(sum/A.n.buf.length)<THR;
+if(s!==A.silent) onSilence(s);
 }
-},100);
+},150);
 })();
 
 }
