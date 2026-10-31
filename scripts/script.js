@@ -724,17 +724,6 @@ color:${c};
 ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
 <span style="font-size:10px">v${YTProVer}</span>
 <br><br>
-<div data-action="follow" style="min-height:35px;height:auto;width:95%;margin:auto;background:#ee2a7b44;border-radius:30px;margin-bottom:15px;border:1px solid #ee2a7b;display:flex;padding:5px;gap:8px;">
-
-<img style="flex-shrink: 0;height:40px;width:40px;border-radius:50%;" src="https://raw.githubusercontent.com/prateek-chaubey/YTPro/refs/heads/main/.github/img/habitius.webp" >
-<div style="display:flex;flex-direction:column;align-items:flex-start;height:100%;width:auto;flex-shrink:0;font-size:14px;background:re;padding:0;"><b>Instagram'da Habitius'u takip et</b>Günlük alışkanlık, yaşam ve sağlık ipuçları </div>
-
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${isD ? "#ccc" : "#444"}" viewBox="0 0 16 16">
-<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
-</svg>
-
-</div>
-
 <div><input type="url" placeholder="YouTube bağlantısı girin" id="ytproUrlInput" ></div>
 <br>
 <button data-action="hearts">Beğenilen Videolar
@@ -789,18 +778,9 @@ ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
 </svg>
 </button>
 <br>
-<button style="font-weight:bolder;" data-action="sponsor">Sponsor Ol
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="${isD ? "#ccc" : "#444"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 2l6 6-6 6"/>
-</svg>
-
-</button>
-<br>
 <div>Geliştirici Modu <span data-action="sttCnf" data-value="devMode" style="${sttCnf(0,0,"devMode")}" ><b style="${sttCnf(0,1,"devMode")}"></b></span></div>
 <br><br>
-<p style="font-size:1.25rem;width:calc(100% - 20px);margin:auto;text-align:left"><b style="font-weight:bold">Uyarı</b>: Bu, verimliliği artırmak için bir webview'e JavaScript enjeksiyonunu göstermeyi amaçlayan eğitim amaçlı bir projedir.<br>
-Orijinal kaynak kodu: <a href="https://www.youtube.com/redirect?q=https://github.com/prateek-chaubey/YTPRO" style="font-family:monospace;" > https://github.com/prateek-chaubey/YTPRO</a>
-<br><br></p><br><br><br>
+<br><br><br>
 
 <div class="geminiModels">
 
