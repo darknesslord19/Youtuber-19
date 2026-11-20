@@ -471,6 +471,27 @@ c.style.display = c.style.display === "none" ? "flex" : "none";
 });
 
 
+/*Darkness Lord: MP3 seçenekleri*/
+var mp3Src=audioOnly.filter(a=>a.languageId==langId).sort((x,y)=>{
+var px=(x.container=="mp4"?1:0), py=(y.container=="mp4"?1:0);
+if(px!=py) return py-px;
+return (y.bitrate||0)-(x.bitrate||0);
+})[0];
+if(mp3Src){
+[128,192,320].forEach(kb=>{
+var mp3Li=document.createElement("li");
+Object.assign(mp3Li.dataset,{
+langId:mp3Src.audioTrackId,
+isWebm:mp3Src.container == "webm",
+audioItag:mp3Src.itag,
+mp3Kbps:kb
+});
+var estMB=((info.basic_info.duration||0)*kb/8/1024).toFixed(1);
+mp3Li.innerHTML=`${downBtn}<span style="margin-left:10px;"><b>MP3</b> | ${kb} kbps${kb==192?" (önerilen)":""} | ~${estMB} MB</span>`;
+audioOnlyDiv.appendChild(mp3Li);
+});
+}
+
 audioOnly.forEach(aud =>{
 if(aud.languageId != langId) return;
 
@@ -628,7 +649,7 @@ downloadSABRStream(el.dataset.videoItag,el.dataset.audioItag,el.dataset.isWebm,e
 audioOnlyDiv.addEventListener("click",(e)=>{
 var el=e.target.closest("[data-audio-itag]");
 if(!el) return;
-downloadSABRStream(null,el.dataset.audioItag,el.dataset.isWebm,el.dataset.langId,EnabledTrackTypes.AUDIO_ONLY);
+downloadSABRStream(null,el.dataset.audioItag,el.dataset.isWebm,el.dataset.langId,EnabledTrackTypes.AUDIO_ONLY,el.dataset.mp3Kbps?parseInt(el.dataset.mp3Kbps):0);
 });
 
 
@@ -683,7 +704,7 @@ const sabrFormats = adaptiveFormats.map(f => buildSabrFormat(f));
 
 
 
-async function downloadSABRStream(videoItag,audioItag,isWebm,langId,enabledTrack){
+async function downloadSABRStream(videoItag,audioItag,isWebm,langId,enabledTrack,mp3Kbps=0){
   
   
 if(!Android.isWebViewSupported()){
@@ -835,6 +856,24 @@ var {elDetails,elProgress} = createProgreses("Audio Stream");
 var fileName=`${safeTitle}_audio${new Date().getTime()}.${containerExt}`;
 
 await pipeToDisk(audioStream,fileName, estAudioBytes,elDetails,elProgress);
+
+if(mp3Kbps>0){
+var conv=createProgreses("MP3'e dönüştürülüyor");
+var pid="mp3_"+Date.now();
+window.ytproMp3Bars=window.ytproMp3Bars||{};
+window.ytproMp3Bars[pid]=conv;
+window.ytproMp3Progress=function(id,p){
+var b=(window.ytproMp3Bars||{})[id]; if(!b) return;
+if(p<0){b.elDetails.children[0].innerHTML=" başarısız";b.elProgress.style.background="#c33";return;}
+b.elDetails.children[0].innerHTML=" %"+p;
+b.elProgress.style.width=p+"%";
+b.elProgress.innerHTML=p+"%";
+if(p>=100){b.elDetails.children[0].innerHTML=" tamamlandı";delete window.ytproMp3Bars[id];}
+};
+window.ytproMp3Progress(pid,0);
+Android.showToast("MP3'e dönüştürülüyor...");
+Android.convertToMp3(fileName, `${safeTitle}.mp3`, mp3Kbps, pid);
+}
 
 
 

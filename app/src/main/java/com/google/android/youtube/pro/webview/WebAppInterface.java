@@ -133,6 +133,33 @@ public class WebAppInterface {
 	}
 	
 	@JavascriptInterface
+	public void convertToMp3(String inputFileName, String outputFileName, int kbps, final String progressId) {
+		java.io.File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS.concat("/YTPRO"));
+		java.io.File input = new java.io.File(downloads, inputFileName);
+		com.google.android.youtube.pro.utils.Mp3Converter.convert(activity.getApplicationContext(), input, outputFileName, kbps, new com.google.android.youtube.pro.utils.Mp3Converter.Callback() {
+			@Override
+			public void onProgress(int percent) {
+				web.evaluateJavascript("try{window.ytproMp3Progress&&ytproMp3Progress('" + progressId + "'," + percent + ")}catch(e){}", null);
+			}
+			@Override
+			public void onSuccess(String name) {
+				web.evaluateJavascript("try{window.ytproMp3Progress&&ytproMp3Progress('" + progressId + "',100)}catch(e){}", null);
+				Toast.makeText(activity, "MP3 hazır: Download/YTPRO/" + name, Toast.LENGTH_LONG).show();
+			}
+			@Override
+			public void onFailure(String message) {
+				web.evaluateJavascript("try{window.ytproMp3Progress&&ytproMp3Progress('" + progressId + "',-1)}catch(e){}", null);
+				Toast.makeText(activity, "MP3 dönüştürme başarısız: " + message, Toast.LENGTH_LONG).show();
+			}
+		});
+	}
+	
+	@JavascriptInterface
+	public void setPipOnLeave(boolean on) {
+		activity.getSharedPreferences("YTPRO", Context.MODE_PRIVATE).edit().putBoolean("pipOnLeave", on).apply();
+	}
+	
+	@JavascriptInterface
 	public void setBgPlay(boolean bgplay) {
 		activity.getSharedPreferences("YTPRO", Context.MODE_PRIVATE).edit().putBoolean("bgplay", bgplay).apply();
 	}

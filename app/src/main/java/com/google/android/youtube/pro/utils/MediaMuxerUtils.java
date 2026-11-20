@@ -233,7 +233,7 @@ public class MediaMuxerUtils {
     }
 
     // Deletes a file correctly for the current API level
-    private static void deleteFile(Context context, File file) {
+    public static void deleteFile(Context context, File file) {
         if (!file.exists()) return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -16,12 +16,43 @@ import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.net.wifi.WifiManager;
 import android.util.Base64;
 import android.util.Log;
 
 import com.google.android.youtube.pro.receivers.NotificationActionReceiver;
 
 public class ForegroundService extends Service {
+
+    /*Darkness Lord: ekran kapalıyken de çalmaya devam etmek için kilitler*/
+    private PowerManager.WakeLock wakeLock;
+    private WifiManager.WifiLock wifiLock;
+
+    private void setLocks(boolean on) {
+        try {
+            if (wakeLock == null) {
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "YTPRO:bgplay");
+                wakeLock.setReferenceCounted(false);
+            }
+            if (wifiLock == null) {
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                if (wm != null) {
+                    wifiLock = wm.createWifiLock(Build.VERSION.SDK_INT >= 29 ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY : WifiManager.WIFI_MODE_FULL_HIGH_PERF, "YTPRO:bgplay");
+                    wifiLock.setReferenceCounted(false);
+                }
+            }
+            if (on) {
+                if (!wakeLock.isHeld()) wakeLock.acquire(4 * 60 * 60 * 1000L);
+                if (wifiLock != null && !wifiLock.isHeld()) wifiLock.acquire();
+            } else {
+                if (wakeLock.isHeld()) wakeLock.release();
+                if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
+            }
+        } catch (Exception ignored) {}
+    }
+
 
     public static final String CHANNEL_ID = "Media";
     public static final String ACTION_UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
@@ -126,6 +157,7 @@ public class ForegroundService extends Service {
 
         updateMediaSessionMetadata(title, subtitle, largeIcon, duration); 
         updatePlaybackState(currentPosition, playbackState); 
+        setLocks(!"pause".equals(action));
 
         Intent openAppIntent = new Intent(cont, MainActivity.class);
         openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -279,6 +311,7 @@ public class ForegroundService extends Service {
         updatePlaybackState(currentPosition, playbackState);
 
         startForeground(1, notification);
+        setLocks(!"pause".equals(action));
     }
     
     
@@ -323,6 +356,7 @@ public class ForegroundService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        setLocks(false);
         unregisterReceiver(updateReceiver);
     }
 

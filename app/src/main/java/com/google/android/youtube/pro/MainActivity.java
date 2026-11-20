@@ -176,7 +176,8 @@ public class MainActivity extends Activity {
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
         if (Build.VERSION.SDK_INT >= 26 && web.getUrl() != null && (web.getUrl().contains("watch") || web.getUrl().contains("shorts"))) {
-            if (isPlaying) {
+            boolean pipPref = getSharedPreferences("YTPRO", MODE_PRIVATE).getBoolean("pipOnLeave", true);
+            if (isPlaying && pipPref) {
                 try {
 
          /**Webview requires gesture for FullScreenView which is used for PiP mode , this does that ig.*/

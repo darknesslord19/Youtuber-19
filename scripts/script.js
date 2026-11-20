@@ -77,6 +77,9 @@ localStorage.setItem(x,"true");
 
 }
 if(localStorage.getItem("resumePos") == null) localStorage.setItem("resumePos","true");
+if(localStorage.getItem("pipLeave") == null) localStorage.setItem("pipLeave","true");
+try{Android.setPipOnLeave(localStorage.getItem("pipLeave") != "false");}catch(e){}
+try{Android.setBgPlay(localStorage.getItem("bgplay") == "true");}catch(e){}
 if(localStorage.getItem("skipSilence") == null) localStorage.setItem("skipSilence","false");
 if(localStorage.getItem("fzoom") == "true"){
 document.getElementsByName("viewport")[0].setAttribute("content","");
@@ -750,6 +753,8 @@ ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
 <br>
 <div>Arka Planda Oynatma <span data-action="sttCnf" data-value="bgplay" style="${sttCnf(0,0,"bgplay")}" ><b style="${sttCnf(0,1,"bgplay")}" ></b></span></div> 
 <br>
+<div>Çıkınca Mini Pencere <span data-action="sttCnf" data-value="pipLeave" style="${sttCnf(0,0,"pipLeave")}" ><b style="${sttCnf(0,1,"pipLeave")}" ></b></span></div>
+<br>
 <div>Kaldığın Yerden Devam <span data-action="sttCnf" data-value="resumePos" style="${sttCnf(0,0,"resumePos")}" ><b style="${sttCnf(0,1,"resumePos")}" ></b></span></div>
 <br>
 <b style="display:block;text-align:left;margin:6px 10px 10px;opacity:.7;font-size:13px;">SES GELİŞTİRME</b>
@@ -1007,6 +1012,7 @@ Android.setBgPlay(true);
 }else{
 Android.setBgPlay(false);
 }
+try{Android.setPipOnLeave(localStorage.getItem("pipLeave") != "false");}catch(e){}
 
 
 if(localStorage.getItem("gesC") != "true"){
@@ -2820,6 +2826,31 @@ function showCurtain(){
 
 
 /******** Darkness Lord eklentileri ********/
+
+/*Arka plan oynatma: sayfa her zaman "görünür" sanılsın (YouTube arka planda durdurmasın)*/
+(function(){
+if(window.__ytproVis) return; window.__ytproVis=1;
+function on(){return localStorage.getItem("bgplay")=="true";}
+try{
+var dp=Document.prototype;
+var vs=Object.getOwnPropertyDescriptor(dp,"visibilityState");
+var hd=Object.getOwnPropertyDescriptor(dp,"hidden");
+var wvs=Object.getOwnPropertyDescriptor(dp,"webkitVisibilityState");
+var whd=Object.getOwnPropertyDescriptor(dp,"webkitHidden");
+Object.defineProperty(document,"visibilityState",{configurable:true,get:function(){return on()?"visible":vs.get.call(document);}});
+Object.defineProperty(document,"hidden",{configurable:true,get:function(){return on()?false:hd.get.call(document);}});
+if(wvs) Object.defineProperty(document,"webkitVisibilityState",{configurable:true,get:function(){return on()?"visible":wvs.get.call(document);}});
+if(whd) Object.defineProperty(document,"webkitHidden",{configurable:true,get:function(){return on()?false:whd.get.call(document);}});
+var hf=document.hasFocus.bind(document);
+document.hasFocus=function(){return on()?true:hf();};
+}catch(e){}
+["visibilitychange","webkitvisibilitychange","blur","pagehide","freeze"].forEach(function(ev){
+var stop=function(e){if(on() && (ev!=="blur" || e.target===window || e.target===document)){e.stopImmediatePropagation();}};
+window.addEventListener(ev,stop,true);
+document.addEventListener(ev,stop,true);
+});
+})();
+
 
 /*Kaldığın yerden devam*/
 (function(){
