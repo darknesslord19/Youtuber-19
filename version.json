@@ -1,9 +1,9 @@
 {
-  "version": "4.8",
+  "version": "4.9",
   "apk": "https://github.com/darknesslord19/Youtuber-19/releases/latest/download/youtube_pro_signed.apk",
   "page": "https://github.com/darknesslord19/Youtuber-19/releases/latest",
   "notes": [
-    "Arka planda ses kesilme düzeltmesi",
+    "Arka planda sesin durması düzeltildi",
     "Mini pencerede 'Sadece ses' butonu",
     "MP3 indirme (128/192/320 kbps)"
   ]
