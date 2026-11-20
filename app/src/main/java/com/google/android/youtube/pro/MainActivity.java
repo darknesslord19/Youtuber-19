@@ -263,6 +263,10 @@ public class MainActivity extends Activity {
             bgAudio = true;
             web.evaluateJavascript("try{ytproAudioOnly(true)}catch(e){}", null);
         }
+        if (bgAudio && web != null) {
+            try { web.resumeTimers(); } catch (Exception ignored) {}
+            try { if (Build.VERSION.SDK_INT >= 26) web.setRendererPriorityPolicy(android.webkit.WebView.RENDERER_PRIORITY_IMPORTANT, false); } catch (Exception ignored) {}
+        }
     }
 
     @Override

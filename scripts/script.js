@@ -2203,15 +2203,60 @@ return false;
 /*Darkness Lord: arka planda sadece ses modu.
 Açıkken YouTube'un kendiliğinden duraklatmaları engellenir; bildirimden Duraklat yine çalışır.*/
 window.ytproBgAudio=false;
+/*Arka planda ekran çizilmediği için requestAnimationFrame durur; YouTube oynatıcısı
+video verisini çekmeyi bırakır ve tampon bitince ses kesilir. Arka planda zamanlayıcıya çevir.*/
+(function(){
+if(window.__ytproRaf) return; window.__ytproRaf=1;
+var oR=window.requestAnimationFrame.bind(window), oC=window.cancelAnimationFrame.bind(window);
+window.requestAnimationFrame=function(cb){
+if(!window.ytproBgAudio) return oR(cb);
+return -setTimeout(function(){cb(performance.now());},16);
+};
+window.cancelAnimationFrame=function(id){
+if(id<0) return clearTimeout(-id);
+return oC(id);
+};
+})();
+/*Arka plan günlüğü (Hız Teşhisi açıkken uygulamaya dönünce gösterilir)*/
+window.ytproBgLog=[];
+function ytproBgL(s){
+if(!window.ytproBgAudio) return;
+var v=document.getElementsByClassName('video-stream')[0];
+var ahead="-";
+try{for(var i=0;i<v.buffered.length;i++){if(v.buffered.start(i)<=v.currentTime&&v.buffered.end(i)>=v.currentTime){ahead=(v.buffered.end(i)-v.currentTime).toFixed(1);}}}catch(e){}
+ytproBgLog.push(new Date().toTimeString().slice(0,8)+" "+s+" t="+(v?v.currentTime.toFixed(1):"-")+" rs="+(v?v.readyState:"-")+" tampon="+ahead+"s");
+if(ytproBgLog.length>40) ytproBgLog.shift();
+}
+setInterval(function(){ytproBgL("durum");},3000);
+(function(){
+var hooked=new WeakSet();
+setInterval(function(){
+var v=document.getElementsByClassName('video-stream')[0];
+if(!v||hooked.has(v)) return; hooked.add(v);
+["pause","play","playing","waiting","stalled","ended","emptied","error"].forEach(function(e){v.addEventListener(e,function(){ytproBgL(e);});});
+},1000);
+})();
+function ytproShowBgLog(){
+if(localStorage.getItem("diagMode")!="true" || !ytproBgLog.length) return;
+var b=document.createElement("div");
+b.setAttribute("style","position:fixed;left:6px;right:6px;top:70px;bottom:120px;z-index:2147483647;background:rgba(0,0,0,.92);color:#0f0;font:11px/1.35 monospace;padding:8px;border-radius:8px;overflow:auto;white-space:pre-wrap;");
+b.textContent="ARKA PLAN GÜNLÜĞÜ (kapatmak için dokun)\n\n"+ytproBgLog.join("\n");
+b.onclick=function(){b.remove();};
+document.body.appendChild(b);
+}
 window.ytproAudioOnly=function(on){
 var v=document.getElementsByClassName('video-stream')[0];
 if(on){
+if(!window.ytproBgAudio){window.ytproBgLog=[];}
 window.ytproBgAudio=true;
+ytproBgL("arka plana geçildi");
 pauseAllowed=false;
 if(!window.PIPause && v && v.paused){v.play().catch(()=>{});}
 }else{
 if(!window.ytproBgAudio) return;
+ytproBgL("uygulamaya dönüldü");
 window.ytproBgAudio=false;
+setTimeout(ytproShowBgLog,500);
 window.PIPause=false;
 isPIP=false;
 pauseAllowed=true;
@@ -2285,7 +2330,7 @@ isPIP=true;
 // to allow the pip mode for the video element , like chromium browsers
 
 HTMLMediaElement.prototype.pause = function(){
-  
+try{ytproBgL((pauseAllowed||PIPause)?"duraklatma (izin verildi)":"duraklatma ENGELLENDİ");}catch(e){}
 if (pauseAllowed || PIPause) {
 return originalPause.apply(this, arguments);
 }
