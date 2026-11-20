@@ -1,11 +1,10 @@
 {
-  "version": "4.4",
+  "version": "4.5",
   "apk": "https://github.com/darknesslord19/Youtuber-19/releases/latest/download/youtube_pro_signed.apk",
   "page": "https://github.com/darknesslord19/Youtuber-19/releases/latest",
   "notes": [
-    "Video açılışı hızlandırıldı (daha az işlemci yükü)",
-    "Özellik güncellemeleri artık anında geliyor",
-    "Ayarlara Hız Teşhisi eklendi",
-    "Ses Geliştirme: yükseltici, dengeleme, konuşma netleştirme"
+    "MP3 indirme (128/192/320 kbps)",
+    "Arka planda oynatma güçlendirildi: ekran kapalıyken de çalar",
+    "Yeni ayar: Çıkınca Mini Pencere (kapatırsan sadece ses devam eder)"
   ]
 }
