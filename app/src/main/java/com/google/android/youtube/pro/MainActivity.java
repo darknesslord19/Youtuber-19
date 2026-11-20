@@ -107,6 +107,21 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(new WebAppInterface(this, web), "Android");
         web.setWebChromeClient(new YTProWebChromeClient(this, web));
         web.setWebViewClient(new YTProWebViewClient(this, web));
+        // Darkness Lord: arka plan engellemelerini sayfa yüklenmeden önce kur
+        try {
+            if (androidx.webkit.WebViewFeature.isFeatureSupported(androidx.webkit.WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                java.io.InputStream in = getAssets().open("ytpro_early.js");
+                java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[8192]; int n;
+                while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                in.close();
+                java.util.HashSet<String> origins = new java.util.HashSet<>();
+                origins.add("https://m.youtube.com");
+                origins.add("https://www.youtube.com");
+                origins.add("https://youtube.com");
+                androidx.webkit.WebViewCompat.addDocumentStartJavaScript(web, bo.toString("UTF-8"), origins);
+            }
+        } catch (Exception ignored) {}
         
         web.loadUrl(url);
 

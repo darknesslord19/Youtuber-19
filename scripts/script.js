@@ -2202,7 +2202,7 @@ return false;
 
 /*Darkness Lord: arka planda sadece ses modu.
 Açıkken YouTube'un kendiliğinden duraklatmaları engellenir; bildirimden Duraklat yine çalışır.*/
-window.ytproBgAudio=false;
+if(window.ytproBgAudio===undefined) window.ytproBgAudio=false;
 /*Arka planda ekran çizilmediği için requestAnimationFrame durur; YouTube oynatıcısı
 video verisini çekmeyi bırakır ve tampon bitince ses kesilir. Arka planda zamanlayıcıya çevir.*/
 (function(){
@@ -2240,7 +2240,7 @@ function ytproShowBgLog(){
 if(localStorage.getItem("diagMode")!="true" || !ytproBgLog.length) return;
 var b=document.createElement("div");
 b.setAttribute("style","position:fixed;left:6px;right:6px;top:70px;bottom:120px;z-index:2147483647;background:rgba(0,0,0,.92);color:#0f0;font:11px/1.35 monospace;padding:8px;border-radius:8px;overflow:auto;white-space:pre-wrap;");
-b.textContent="ARKA PLAN GÜNLÜĞÜ (kapatmak için dokun)\n\n"+ytproBgLog.join("\n");
+b.textContent="ARKA PLAN GÜNLÜĞÜ (kapatmak için dokun)\nerken koruma: "+(window.__ytproEarly?"VAR":"YOK")+"\n"+(window.ytproEarlyLog||[]).slice(-4).join("\n")+"\n\n"+ytproBgLog.join("\n");
 b.onclick=function(){b.remove();};
 document.body.appendChild(b);
 }
