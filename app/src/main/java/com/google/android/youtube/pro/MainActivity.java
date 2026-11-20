@@ -2,6 +2,11 @@ package com.google.android.youtube.pro;
 
 import android.app.Activity;
 import android.app.PictureInPictureParams;
+import android.app.PendingIntent;
+import android.app.RemoteAction;
+import android.content.BroadcastReceiver;
+import android.graphics.drawable.Icon;
+import java.util.ArrayList;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -117,6 +122,7 @@ public class MainActivity extends Activity {
 
     private void setupReceiver() {
         broadcastReceiver = new MediaCommandReceiver(web);
+        registerAudioOnlyReceiver();
         if (Build.VERSION.SDK_INT >= 34 && getApplicationInfo().targetSdkVersion >= 34) {
             registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"), RECEIVER_EXPORTED);
         } else {
@@ -166,6 +172,41 @@ public class MainActivity extends Activity {
         }
     }
 
+    /*Darkness Lord: mini pencerede "Sadece ses" butonu*/
+    public static final String ACTION_AUDIO_ONLY = "com.google.android.youtube.pro.AUDIO_ONLY";
+    private BroadcastReceiver audioOnlyReceiver;
+
+    public PictureInPictureParams buildPipParams(boolean portrait) {
+        PictureInPictureParams.Builder b = new PictureInPictureParams.Builder()
+                .setAspectRatio(new Rational(portrait ? 9 : 16, portrait ? 16 : 9));
+        try {
+            Intent i = new Intent(ACTION_AUDIO_ONLY).setPackage(getPackageName());
+            PendingIntent pi = PendingIntent.getBroadcast(this, 77, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            ArrayList<RemoteAction> actions = new ArrayList<>();
+            actions.add(new RemoteAction(Icon.createWithResource(this, R.drawable.ic_headset_white), "Sadece ses", "Pencereyi kapat, ses arka planda devam etsin", pi));
+            b.setActions(actions);
+        } catch (Exception ignored) {}
+        return b.build();
+    }
+
+    private void registerAudioOnlyReceiver() {
+        if (Build.VERSION.SDK_INT < 26 || audioOnlyReceiver != null) return;
+        audioOnlyReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent intent) {
+                // Mini pencereyi gizle, uygulama arka planda çalmaya devam etsin
+                moveTaskToBack(true);
+                web.postDelayed(() -> web.evaluateJavascript("try{var v=document.getElementsByClassName('video-stream')[0];if(v&&v.paused)v.play();}catch(e){}", null), 600);
+                Toast.makeText(MainActivity.this, "Ses arka planda devam ediyor", Toast.LENGTH_SHORT).show();
+            }
+        };
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(audioOnlyReceiver, new IntentFilter(ACTION_AUDIO_ONLY), RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(audioOnlyReceiver, new IntentFilter(ACTION_AUDIO_ONLY));
+        }
+    }
+
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
         isPip = isInPictureInPictureMode;
@@ -197,9 +238,7 @@ public class MainActivity extends Activity {
          up.recycle();
          web.loadUrl( "javascript:hideCurtain();");
                  
-                    PictureInPictureParams params = new PictureInPictureParams.Builder()
-                            .setAspectRatio(new Rational(portrait ? 9 : 16, portrait ? 16 : 9))
-                            .build();
+                    PictureInPictureParams params = buildPipParams(portrait);
                     enterPictureInPictureMode(params);
                 } catch (IllegalStateException e) {
                     e.printStackTrace();
@@ -219,6 +258,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
         stopService(new Intent(getApplicationContext(), ForegroundService.class));
         if (broadcastReceiver != null) unregisterReceiver(broadcastReceiver);
+        if (audioOnlyReceiver != null) { try { unregisterReceiver(audioOnlyReceiver); } catch (Exception ignored) {} }
         if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
         }

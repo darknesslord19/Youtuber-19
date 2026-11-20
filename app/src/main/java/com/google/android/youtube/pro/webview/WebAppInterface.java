@@ -271,9 +271,7 @@ public class WebAppInterface {
 	public void pipvid(String mode) {
 		if (android.os.Build.VERSION.SDK_INT >= 26) {
 			try {
-				PictureInPictureParams params = new PictureInPictureParams.Builder()
-				.setAspectRatio(new Rational(mode.equals("portrait") ? 9 : 16, mode.equals("portrait") ? 16 : 9))
-				.build();
+				PictureInPictureParams params = activity.buildPipParams(mode.equals("portrait"));
 				activity.enterPictureInPictureMode(params);
 			} catch (Exception e) { e.printStackTrace(); }
 		} else {

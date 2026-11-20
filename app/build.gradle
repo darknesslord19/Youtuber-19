@@ -8,8 +8,8 @@ android {
         applicationId "com.google.android.youtube.pro"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 6
-        versionName "4.5"
+        versionCode 7
+        versionName "4.6"
     }
 
     buildTypes {
