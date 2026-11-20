@@ -2224,8 +2224,11 @@ if(!window.ytproBgAudio) return;
 var v=document.getElementsByClassName('video-stream')[0];
 var ahead="-";
 try{for(var i=0;i<v.buffered.length;i++){if(v.buffered.start(i)<=v.currentTime&&v.buffered.end(i)>=v.currentTime){ahead=(v.buffered.end(i)-v.currentTime).toFixed(1);}}}catch(e){}
-ytproBgLog.push(new Date().toTimeString().slice(0,8)+" "+s+" t="+(v?v.currentTime.toFixed(1):"-")+" rs="+(v?v.readyState:"-")+" tampon="+ahead+"s");
-if(ytproBgLog.length>40) ytproBgLog.shift();
+var line=s+" t="+(v?v.currentTime.toFixed(1):"-")+" tampon="+ahead+"s";
+var last=ytproBgLog[ytproBgLog.length-1];
+if(last && last.l===line){last.n++;last.end=new Date().toTimeString().slice(0,8);}
+else{ytproBgLog.push({l:line,n:1,at:new Date().toTimeString().slice(0,8)});}
+if(ytproBgLog.length>60) ytproBgLog.splice(1,1);
 }
 setInterval(function(){ytproBgL("durum");},3000);
 (function(){
@@ -2236,18 +2239,33 @@ if(!v||hooked.has(v)) return; hooked.add(v);
 ["pause","play","playing","waiting","stalled","ended","emptied","error"].forEach(function(e){v.addEventListener(e,function(){ytproBgL(e);});});
 },1000);
 })();
+function ytproCollapse(){
+/*pause-play-playing-ENGELLENDİ döngüsünü tek satıra indir*/
+var L=ytproBgLog;
+for(var i=0;i+8<=L.length;){
+var a=L.slice(i,i+4).map(function(e){return e.l;}).join("|"), b2=L.slice(i+4,i+8).map(function(e){return e.l;}).join("|");
+if(a===b2){var rep=L[i];rep.cyc=(rep.cyc||1)+1;L.splice(i+4,4);}else i++;
+}
+L.forEach(function(e){if(e.cyc){e.l=e.l+" [4'lü döngü x"+e.cyc+"]";delete e.cyc;}});
+}
 function ytproShowBgLog(){
+ytproCollapse();
 if(localStorage.getItem("diagMode")!="true" || !ytproBgLog.length) return;
 var b=document.createElement("div");
 b.setAttribute("style","position:fixed;left:6px;right:6px;top:70px;bottom:120px;z-index:2147483647;background:rgba(0,0,0,.92);color:#0f0;font:11px/1.35 monospace;padding:8px;border-radius:8px;overflow:auto;white-space:pre-wrap;");
-b.textContent="ARKA PLAN GÜNLÜĞÜ (kapatmak için dokun)\nerken koruma: "+(window.__ytproEarly?"VAR":"YOK")+"\n"+(window.ytproEarlyLog||[]).slice(-4).join("\n")+"\n\n"+ytproBgLog.join("\n");
+var vsd=Object.getOwnPropertyDescriptor(Document.prototype,"visibilityState");
+b.textContent="ARKA PLAN GÜNLÜĞÜ v2 (kapatmak için dokun)\nerken koruma: "+(window.__ytproEarly?"VAR":"YOK")+"  gerçek görünürlük: "+(vsd?vsd.get.call(document):"?")+
+"\nERKEN ENGEL:\n"+((window.ytproEarlyLog||[]).slice(-3).join("\n")||"-")+
+"\nENGEL YIĞINI:\n"+((window.ytproStackLog||[]).slice(-3).join("\n")||"-")+
+"\nOYNAT HATALARI: "+((window.ytproPlayErr||[]).slice(-3).join(" | ")||"-")+
+"\n\n"+ytproBgLog.map(function(e){return e.at+" "+e.l+(e.n>1?"  (x"+e.n+" "+e.end+"e kadar)":"");}).join("\n");
 b.onclick=function(){b.remove();};
 document.body.appendChild(b);
 }
 window.ytproAudioOnly=function(on){
 var v=document.getElementsByClassName('video-stream')[0];
 if(on){
-if(!window.ytproBgAudio){window.ytproBgLog=[];}
+if(!window.ytproBgAudio){window.ytproBgLog=[];window.ytproStackLog=[];window.ytproPlayErr=[];window.ytproEarlyLog=[];}
 window.ytproBgAudio=true;
 ytproBgL("arka plana geçildi");
 pauseAllowed=false;
@@ -2330,13 +2348,14 @@ isPIP=true;
 // to allow the pip mode for the video element , like chromium browsers
 
 HTMLMediaElement.prototype.pause = function(){
-try{ytproBgL((pauseAllowed||PIPause)?"duraklatma (izin verildi)":"duraklatma ENGELLENDİ");}catch(e){}
+try{ytproBgL((pauseAllowed||PIPause)?"duraklatma (izin verildi)":"duraklatma ENGELLENDİ");
+if(window.ytproBgAudio){window.ytproStackLog=window.ytproStackLog||[];var st=(new Error().stack||"").split("\n").slice(2,5).map(function(s){return s.trim().replace(/https?:\/\/[^\s)]*\//g,"").slice(0,55);}).join(" < ");if(window.ytproStackLog[window.ytproStackLog.length-1]!==st)window.ytproStackLog.push(st);if(window.ytproStackLog.length>6)window.ytproStackLog.shift();}}catch(e){}
 if (pauseAllowed || PIPause) {
 return originalPause.apply(this, arguments);
 }
 
 if (this.paused) {
-this.play().catch(() => {});
+this.play().catch((e) => {try{window.ytproPlayErr=window.ytproPlayErr||[];window.ytproPlayErr.push((e&&e.name)||"hata");if(window.ytproPlayErr.length>6)window.ytproPlayErr.shift();}catch(x){}});
 }
 };
 
