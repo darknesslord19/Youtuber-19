@@ -2200,6 +2200,25 @@ return false;
 
 
 
+/*Darkness Lord: arka planda sadece ses modu.
+Açıkken YouTube'un kendiliğinden duraklatmaları engellenir; bildirimden Duraklat yine çalışır.*/
+window.ytproBgAudio=false;
+window.ytproAudioOnly=function(on){
+var v=document.getElementsByClassName('video-stream')[0];
+if(on){
+window.ytproBgAudio=true;
+pauseAllowed=false;
+if(!window.PIPause && v && v.paused){v.play().catch(()=>{});}
+}else{
+if(!window.ytproBgAudio) return;
+window.ytproBgAudio=false;
+window.PIPause=false;
+isPIP=false;
+pauseAllowed=true;
+try{if(document.fullscreenElement) document.exitFullscreen();}catch(e){}
+}
+};
+
 ///PIP MODE CONFIG
 function removePIP(){
 

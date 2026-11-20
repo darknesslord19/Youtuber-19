@@ -175,6 +175,7 @@ public class MainActivity extends Activity {
     /*Darkness Lord: mini pencerede "Sadece ses" butonu*/
     public static final String ACTION_AUDIO_ONLY = "com.google.android.youtube.pro.AUDIO_ONLY";
     private BroadcastReceiver audioOnlyReceiver;
+    private boolean bgAudio = false;
 
     public PictureInPictureParams buildPipParams(boolean portrait) {
         PictureInPictureParams.Builder b = new PictureInPictureParams.Builder()
@@ -195,8 +196,10 @@ public class MainActivity extends Activity {
             @Override
             public void onReceive(Context c, Intent intent) {
                 // Mini pencereyi gizle, uygulama arka planda çalmaya devam etsin
+                bgAudio = true;
+                web.evaluateJavascript("try{ytproAudioOnly(true)}catch(e){}", null);
                 moveTaskToBack(true);
-                web.postDelayed(() -> web.evaluateJavascript("try{var v=document.getElementsByClassName('video-stream')[0];if(v&&v.paused)v.play();}catch(e){}", null), 600);
+                web.postDelayed(() -> web.evaluateJavascript("try{ytproAudioOnly(true)}catch(e){}", null), 800);
                 Toast.makeText(MainActivity.this, "Ses arka planda devam ediyor", Toast.LENGTH_SHORT).show();
             }
         };
@@ -210,7 +213,11 @@ public class MainActivity extends Activity {
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
         isPip = isInPictureInPictureMode;
-        web.evaluateJavascript(isInPictureInPictureMode ? "PIPlayer();" : "removePIP();", null);
+        if (!isInPictureInPictureMode && bgAudio) {
+            web.evaluateJavascript("try{ytproAudioOnly(true)}catch(e){}", null);
+        } else {
+            web.evaluateJavascript(isInPictureInPictureMode ? "PIPlayer();" : "removePIP();", null);
+        }
     }
 
     @Override
@@ -244,6 +251,26 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Uygulama arka plana geçti: çalıyorsa YouTube'un otomatik duraklatmasını engelle
+        boolean bg = getSharedPreferences("YTPRO", MODE_PRIVATE).getBoolean("bgplay", true);
+        if (bg && isPlaying && !isPip && web != null) {
+            bgAudio = true;
+            web.evaluateJavascript("try{ytproAudioOnly(true)}catch(e){}", null);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bgAudio && web != null && !isPip) {
+            bgAudio = false;
+            web.evaluateJavascript("try{ytproAudioOnly(false)}catch(e){}", null);
         }
     }
 
