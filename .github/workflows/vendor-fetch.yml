@@ -1,0 +1,31 @@
+name: vendor-fetch
+on:
+  push:
+    branches: [ vendor-fetch ]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: vendor-fetch
+    - name: Fetch jump3r sources
+      run: |
+        set -e
+        mkdir -p vendor/jump3r
+        cd vendor/jump3r
+        for v in 1.0.5 1.0.4; do
+          if curl -fsSL -o src.jar https://repo1.maven.org/maven2/de/sciss/jump3r/$v/jump3r-$v-sources.jar; then echo "$v" > VERSION; break; fi
+        done
+        unzip -q -o src.jar -d src && rm src.jar
+        curl -fsSL -o POM.xml https://repo1.maven.org/maven2/de/sciss/jump3r/$(cat VERSION)/jump3r-$(cat VERSION).pom || true
+        find src -type f | head -200 > FILES.txt
+    - name: Commit
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add vendor
+        git commit -m "vendor: jump3r sources" || echo nothing
+        git push origin vendor-fetch
