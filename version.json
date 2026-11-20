@@ -1,10 +1,10 @@
 {
-  "version": "4.6",
+  "version": "4.7",
   "apk": "https://github.com/darknesslord19/Youtuber-19/releases/latest/download/youtube_pro_signed.apk",
   "page": "https://github.com/darknesslord19/Youtuber-19/releases/latest",
   "notes": [
-    "Mini pencereye 'Sadece ses' butonu: pencere kapanır, müzik arka planda devam eder",
-    "MP3 indirme (128/192/320 kbps)",
-    "Ekran kapalıyken kesintisiz oynatma"
+    "Arka planda ses artık kendi kendine durmuyor",
+    "Mini pencerede 'Sadece ses' butonu",
+    "MP3 indirme (128/192/320 kbps)"
   ]
 }
