@@ -845,7 +845,13 @@ var actionsList={
     Android.oplink("https://www.instagram.com/habitius.daily");
   },
   hearts:()=>{
-    window.location.hash='#hearts';
+    if(window.location.hash=='#hearts'){
+      try{document.getElementById("outerheartsdiv").remove();}catch{}
+      try{document.getElementById("settingsprodiv").remove();}catch{}
+      showHearts();
+    }else{
+      window.location.hash='#hearts';
+    }
   },
   checkUpdate:()=>{
     checkUpdates(false);
@@ -2111,56 +2117,24 @@ localStorage.setItem("hearts",JSON.stringify(j));
 }
 
 function ytProHeart(x){
-
-
+/*Darkness Lord: YouTube sayfa yapısını değiştirdiği için başlık bulunamıyor ve kayıt hata veriyordu.
+Başlık artık oynatıcıdan alınıyor, kapak resmi YouTube'un kendi resmi.*/
 var vid=(new URLSearchParams(window.location.search)).get('v') || window.location.pathname.replace("/shorts/","");
+if(!vid || vid=="/"){try{Android.showToast("Video bulunamadı");}catch(e){}return;}
 
-var video = document.getElementsByClassName('video-stream')[0];
-var canvas = document.createElement('canvas');
-var context = canvas.getContext('2d');
-
-var isShorts = window.location.pathname.indexOf("shorts") > -1;
-
-if (isShorts) {
-  canvas.width = 90;
-  canvas.height = 160;
-  context.fillStyle = "black";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-} else {
-  canvas.width = 320;
-  canvas.height = 180;
-  context.fillStyle = "black";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+function clean(s){return String(s||"").replaceAll("|","").replaceAll("\\","").replaceAll("?","").replaceAll("*","").replaceAll("<","").replaceAll("/","").replaceAll(":","").replaceAll('"',"").replaceAll(">","").trim();}
+var title="";
+try{title=document.getElementById("movie_player").getVideoData().title;}catch(e){}
+if(!title){
+var sels=['.ytShortsVideoTitleViewModelShortsVideoTitle','.slim-video-metadata-header','.slim-video-information-title','h2.slim-video-information-title','ytm-slim-video-metadata-section-renderer h2'];
+for(var i=0;i<sels.length && !title;i++){try{title=document.querySelector(sels[i]).textContent;}catch(e){}}
 }
-  
-var dataURI = canvas.toDataURL('image/jpeg');
-
-
-if(window.location.pathname.indexOf("shorts") > -1){
+if(!title){title=document.title.replace(/ - YouTube$/,"");}
 
 var vDetails={
-thumb:dataURI,
-title:document.getElementsByClassName('ytShortsVideoTitleViewModelShortsVideoTitle')[0].textContent.replaceAll("|","").replaceAll("\\","").replaceAll("?","").replaceAll("*","").replaceAll("<","").replaceAll("/","").replaceAll(":","").replaceAll('"',"").replaceAll(">","")
+thumb:"https://i.ytimg.com/vi/"+vid+"/mqdefault.jpg",
+title:clean(title)||vid
 };
-
-}else{
-
-var vDetails={
-thumb:dataURI,
-title:document.getElementsByClassName('slim-video-metadata-header')[0].textContent.replaceAll("|","").replaceAll("\\","").replaceAll("?","").replaceAll("*","").replaceAll("<","").replaceAll("/","").replaceAll(":","").replaceAll('"',"").replaceAll(">","")
-}
-
-/*
-var vDetails={
-thumb:[...ytplayer.config.args.raw_player_response?.videoDetails?.thumbnail?.thumbnails].pop().url,
-title:ytplayer.config.args.raw_player_response?.videoDetails?.title.replaceAll("|","").replaceAll("\\","").replaceAll("?","").replaceAll("*","").replaceAll("<","").replaceAll("/","").replaceAll(":","").replaceAll('"',"").replaceAll(">","")
-};*/
-
-}
-
-
 
 var g="16";
 (window.location.href.indexOf('youtube.com/shorts') > -1) ? g="24" : g="24" ;
