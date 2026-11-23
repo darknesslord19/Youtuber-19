@@ -3229,6 +3229,22 @@ var CHEV='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox
 window.ytproBuildFilmDrawer=function(host){
 if(!host) return;
 var open=false;
+function align(){
+/*Diğer satırlarla birebir aynı görünsün: üstteki butonun gerçek ölçülerini kopyala*/
+try{
+if(!host.isConnected) return;
+var ref=host.parentElement.querySelector('button[data-action="checkUpdate"]');
+var fh=host.querySelector(".fhead");
+if(ref&&fh){
+var cs=getComputedStyle(ref);
+["paddingTop","paddingRight","paddingBottom","paddingLeft","boxSizing","fontSize","fontFamily","fontWeight","letterSpacing","lineHeight","height","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth","borderStyle"].forEach(function(k){fh.style[k]=cs[k];});
+fh.style.width=ref.getBoundingClientRect().width+"px";
+var fb=host.querySelector(".fbody");if(fb) fb.style.width=ref.getBoundingClientRect().width+"px";
+var rr=ref.getBoundingClientRect(),hr=host.getBoundingClientRect();
+if(rr.width&&hr.width){fh.style.marginLeft=(rr.left-hr.left)+"px";fh.style.marginRight="0";if(fb){fb.style.marginLeft=(rr.left-hr.left)+"px";fb.style.marginRight="0";}}
+}
+}catch(e){}
+}
 function render(){
 var P='#ssprodivI #ytproFilmDrawer';
 var html='<style>'+
@@ -3257,6 +3273,7 @@ html+='<div class="fcat" data-film-add="1">'+ico("plus")+'<span class="t">Katego
 '<div class="fadd" style="display:none;padding:4px 8px 8px 14px;gap:8px;"><input placeholder="Kategori adı (örn. Komedi)" maxlength="30"><button data-film-save="1" style="width:auto;height:auto;padding:8px 14px;border-radius:12px;background:'+box()+';font-size:1.3rem;margin:0;">Ekle</button></div>'+
 '</div></div>';
 host.innerHTML=html;
+align();setTimeout(align,60);setTimeout(align,400);
 host.classList.toggle("open",open);
 host.style.borderRadius="14px";
 host.style.background=open?(isD?"#2a2a2a":"#e9e9e9"):"transparent";
