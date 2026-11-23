@@ -827,7 +827,7 @@ ${localStorage.getItem("prompt")}
 
 
 <div class="credit" >
-<z style="margin-right:6px">Made by Darkness Lord</z>
+<z style="margin-right:6px">Made by Darknes Lord</z>
 </div>
 `;
 
