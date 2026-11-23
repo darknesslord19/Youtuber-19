@@ -744,7 +744,6 @@ ytpSetI.innerHTML+=`<br><b style='font-size:18px' >YT PRO Ayarları</b>
 </button>
 <br>
 <div id="ytproFilmDrawer"></div>
-<br>
 <div>Sponsorları Otomatik Atla <span data-action="sttCnf" data-value="autoSpn" style="${sttCnf(0,0,"autoSpn")}" ><b style="${sttCnf(0,1,"autoSpn")}"></b></span></div>
 <br>
 <div>Hareket Kontrolleri <span data-action="sttCnf" data-value="gesC" style="${sttCnf(0,0,"gesC")}" ><b style="${sttCnf(0,1,"gesC")}"></b></span></div>
@@ -3233,12 +3232,12 @@ var open=false;
 function render(){
 var P='#ssprodivI #ytproFilmDrawer';
 var html='<style>'+
-P+'{height:auto;width:calc(100% - 20px);margin:0 auto;padding:0;display:block;text-align:left;}'+
+P+'{height:auto;width:100%;margin:0;padding:0;display:block;text-align:left;}'+
 P+' div{height:auto;width:auto;padding:0;margin:0;display:block;position:static;font-size:inherit;}'+
 P+' span{display:inline;height:auto;width:auto;border-radius:0;position:static;background:none;right:auto;}'+
 P+' .ytproChev{fill:'+(isD?"#ccc":"#444")+';transition:transform .3s;}'+
 P+'.open > .fhead .ytproChev{transform:rotate(90deg);}'+
-P+' .fbody{display:grid;grid-template-rows:0fr;overflow:hidden;transition:grid-template-rows .35s ease;}'+
+P+' .fbody{width:calc(100% - 20px);margin:0 auto;display:grid;grid-template-rows:0fr;overflow:hidden;transition:grid-template-rows .35s ease;}'+
 P+'.open .fbody{grid-template-rows:1fr;}'+
 P+' .finner{overflow:hidden;min-height:0;}'+
 P+' .fcat{display:flex;align-items:center;gap:10px;padding:9px 8px 9px 14px;border-radius:10px;text-align:left;font-size:1.35rem;color:'+fg()+';}'+
@@ -3246,7 +3245,7 @@ P+' .fcat:active{background:'+box()+';}'+
 P+' .fcat .t{display:block;flex:1;min-width:0;}'+
 P+' .fcat small{display:block;font-size:1.05rem;color:'+sub()+';}'+
 P+' .fadd input{height:auto;width:100%;border:0;border-radius:12px;padding:10px;background:'+box()+';color:'+fg()+';font-size:1.3rem;}'+
-P+' .fhead{width:100%;height:40px;background:transparent;font-size:1.45rem;border:0;border-radius:0;padding:1px 6px;margin-top:3px;text-align:left;color:'+(isD?"#ccc":"#444")+';}'+
+P+' .fhead{display:block;width:calc(100% - 20px);height:40px;background:transparent;font-size:1.45rem;border:0;border-radius:0;padding:1px 6px;margin:3px auto 0;text-align:left;color:'+(isD?"#ccc":"#444")+';}'+
 '</style>'+
 '<button class="fhead" style="display:block">Filmler'+CHEV+'</button>'+
 '<div class="fbody"><div class="finner">';
