@@ -3263,7 +3263,7 @@ P+' .fcat small{display:block;font-size:1.05rem;color:'+sub()+';}'+
 P+' .fadd input{height:auto;width:100%;border:0;border-radius:12px;padding:10px;background:'+box()+';color:'+fg()+';font-size:1.3rem;}'+
 P+' .fhead{display:block;width:calc(100% - 20px);height:40px;background:transparent;font-size:1.45rem;border:0;border-radius:0;padding:1px 6px;margin:3px auto 0;text-align:left;color:'+(isD?"#ccc":"#444")+';}'+
 '</style>'+
-'<button class="fhead" style="display:block">Filmler'+CHEV+'</button>'+
+'<button class="fhead" style="display:block">Darkness Filmler'+CHEV+'</button>'+
 '<div class="fbody"><div class="finner">';
 cats().forEach(function(k,i){
 html+='<div class="fcat" data-film="'+i+'">'+ico(k.ic)+'<span class="t">'+esc(k.n)+'<small>en yeni yüklenenler</small></span>'+
